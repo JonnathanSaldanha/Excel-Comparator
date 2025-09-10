@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador de Pagamentos - Versão Melhorada</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #34495e;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--light);
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .upload-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .file-upload {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8f9fa;
+            border: 2px dashed #ced4da;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: var(--secondary);
+            background-color: #e8f4fc;
+        }
+
+        .file-upload h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .file-label:hover {
+            background-color: #2980b9;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .file-error {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .config-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .config-section h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .config-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .config-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .config-tab.active {
+            border-bottom: 3px solid var(--secondary);
+            font-weight: bold;
+        }
+
+        .config-content {
+            display: none;
+        }
+
+        .config-content.active {
+            display: block;
+        }
+
+        .config-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .config-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .config-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .config-group select, .config-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .config-error {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .analyze-btn {
+            display: block;
+            width: 200px;
+            margin: 30px auto;
+            padding: 15px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .analyze-btn:hover {
+            background-color: #219653;
+        }
+
+        .analyze-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .results-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .common, .different {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .common h3, .different h3 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid;
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa;
+            z-index: 1;
+        }
+
+        .common h3 {
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .different h3 {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .result-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .result-details {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .download-btn {
+            display: block;
+            width: 250px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .download-btn:hover {
+            background-color: #8e44ad;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--secondary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--secondary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .summary-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .summary-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .only-in-file1 {
+            border-left: 4px solid var(--warning);
+        }
+
+        .only-in-file2 {
+            border-left: 4px solid var(--danger);
+        }
+
+        .matches {
+            border-left: 4px solid var(--success);
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .filter-group input, .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .error-message {
+            background-color: #ffe6e6;
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success-message {
+            background-color: #e6ffe6;
+            color: var(--success);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .debug-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .debug-toggle {
+            color: var(--secondary);
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section {
+                flex-direction: column;
+            }
+            
+            .file-upload {
+                width: 100%;
+            }
+            
+            .results-container {
+                flex-direction: column;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Analisador de Pagamentos - Versão Melhorada</h1>
+            <p class="description">Faça upload de dois arquivos Excel com dados de pagamentos para identificar correspondências mesmo com diferenças de formatação (CNPJ, nomes, etc.) e gere um relatório detalhado.</p>
+        </header>
+
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+
+        <div class="upload-section">
+            <div class="file-upload">
+                <h3>Arquivo 1</h3>
+                <label for="file1" class="file-label">Selecionar Arquivo</label>
+                <input type="file" id="file1" class="file-input" accept=".xlsx, .xls">
+                <div id="file1-name" class="file-name">Nenhum arquivo selecionado</div>
+                <div id="file1-error" class="file-error"></div>
+            </div>
+
+            <div class="file-upload">
+                <h3>Arquivo 2</h3>
+                <label for="file2" class="file-label">Selecionar Arquivo</label>
+                <input type="file" id="file2" class="file-input" accept=".xlsx, .xls">
+                <div id="file2-name" class="file-name">Nenhum arquivo selecionado</div>
+                <div id="file2-error" class="file-error"></div>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h3>Configurações de Comparação</h3>
+            
+            <div class="config-tabs">
+                <div class="config-tab active" data-tab="file1">Configurações Arquivo 1</div>
+                <div class="config-tab" data-tab="file2">Configurações Arquivo 2</div>
+                <div class="config-tab" data-tab="global">Configurações Globais</div>
+            </div>
+            
+            <div class="config-content active" id="file1-config">
+                <div class="config-options">
+                    <div class="config-group">
+                        <label for="file1-cnpj-column">Coluna CNPJ/CPF:</label>
+                        <select id="file1-cnpj-column">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                        <div id="file1-cnpj-error" class="config-error">Selecione uma coluna para CNPJ/CPF</div>
+                    </div>
+                    <div class="config-group">
+                        <label for="file1-valor-column">Coluna Valor:</label>
+                        <select id="file1-valor-column">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                        <div id="file1-valor-error" class="config-error">Selecione uma coluna para Valor</div>
+                    </div>
+                    <div class="config-group">
+                        <label for="file1-nome-column">Coluna Nome:</label>
+                        <select id="file1-nome-column">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <label for="file1-data-column">Coluna Data:</label>
+                        <select id="file1-data-column">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-content" id="file2-config">
+                <div class="config-options">
+                    <div class="config-group">
+                        <label for="file2-cnpj-column">Coluna CNPJ/CPF:</label>
+                        <select id="file2-cnpj-column">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                        <div id="file2-cnpj-error" class="config-error">Selecione uma coluna para CNPJ/CPF</div>
+                    </div>
+                    <div class="config-group">
+                        <label for="file2-valor-column">Coluna Valor:</label>
+                        <select id="file2-valor-column">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                        <div id="file2-valor-error" class="config-error">Selecione uma coluna para Valor</div>
+                    </div>
+                    <div class="config-group">
+                        <label for="file2-nome-column">Coluna Nome:</label>
+                        <select id="file2-nome-column">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <label for="file2-data-column">Coluna Data:</label>
+                        <select id="file2-data-column">
+                            <option value="">Selecionar coluna</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-content" id="global-config">
+                <div class="config-options">
+                    <div class="config-group">
+                        <label for="tolerancia">Tolerância de valores:</label>
+                        <input type="number" id="tolerancia" value="0.01" step="0.01" min="0">
+                    </div>
+                    <div class="config-group">
+                        <label for="ignorar-caracteres">Ignorar caracteres especiais no CNPJ:</label>
+                        <select id="ignorar-caracteres">
+                            <option value="sim" selected>Sim</option>
+                            <option value="nao">Não</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <label for="comparar-nomes">Comparar nomes (ignorar maiúsculas/minúsculas):</label>
+                        <select id="comparar-nomes">
+                            <option value="sim" selected>Sim</option>
+                            <option value="nao">Não</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <label for="linha-cabecalho">Linha do cabeçalho:</label>
+                        <input type="number" id="linha-cabecalho" value="1" min="1">
+                    </div>
+                    <div class="config-group">
+                        <label for="criteria">Critérios para matching:</label>
+                        <select id="criteria" multiple>
+                            <option value="cnpj" selected>CNPJ/CPF</option>
+                            <option value="valor" selected>Valor</option>
+                            <option value="nome">Nome</option>
+                            <option value="data">Data</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Analisando arquivos...</p>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <p id="progress-text">0% concluído</p>
+        </div>
+
+        <button id="analyze-btn" class="analyze-btn" disabled>Analisar Pagamentos</button>
+
+        <div id="results-section" class="results-section">
+            <h2>Resultados da Análise</h2>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filter-cnpj">Filtrar por CNPJ/CPF:</label>
+                    <input type="text" id="filter-cnpj" placeholder="Digite para filtrar...">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-nome">Filtrar por Nome:</label>
+                    <input type="text" id="filter-nome" placeholder="Digite para filtrar...">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-type">Filtrar por Tipo:</label>
+                    <select id="filter-type">
+                        <option value="all">Todos</option>
+                        <option value="matches">Apenas Correspondências</option>
+                        <option value="only-file1">Apenas no Arquivo 1</option>
+                        <option value="only-file2">Apenas no Arquivo 2</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="summary">
+                <div class="summary-item matches">
+                    <div class="summary-number" id="match-count">0</div>
+                    <div class="summary-label">Pagamentos Correspondentes</div>
+                </div>
+                <div class="summary-item only-in-file1">
+                    <div class="summary-number" id="only-file1-count">0</div>
+                    <div class="summary-label">Apenas no Arquivo 1</div>
+                </div>
+                <div class="summary-item only-in-file2">
+                    <div class="summary-number" id="only-file2-count">0</div>
+                    <div class="summary-label">Apenas no Arquivo 2</div>
+                </div>
+            </div>
+            
+            <div class="results-container">
+                <div class="common">
+                    <h3>Pagamentos Correspondentes</h3>
+                    <div id="common-results"></div>
+                </div>
+                
+                <div class="different">
+                    <h3>Pagamentos Não Correspondentes</h3>
+                    <div id="different-results"></div>
+                </div>
+            </div>
+
+            <button id="download-btn" class="download-btn">Baixar Relatório em Excel</button>
+            
+            <div class="debug-toggle" id="debug-toggle">Mostrar informações de debug</div>
+            <div class="debug-info" id="debug-info"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const file1Input = document.getElementById('file1');
+            const file2Input = document.getElementById('file2');
+            const file1Name = document.getElementById('file1-name');
+            const file2Name = document.getElementById('file2-name');
+            const file1Error = document.getElementById('file1-error');
+            const file2Error = document.getElementById('file2-error');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const resultsSection = document.getElementById('results-section');
+            const commonResults = document.getElementById('common-results');
+            const differentResults = document.getElementById('different-results');
+            const loading = document.querySelector('.loading');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const matchCount = document.getElementById('match-count');
+            const onlyFile1Count = document.getElementById('only-file1-count');
+            const onlyFile2Count = document.getElementById('only-file2-count');
+            const configTabs = document.querySelectorAll('.config-tab');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            const debugToggle = document.getElementById('debug-toggle');
+            const debugInfo = document.getElementById('debug-info');
+            
+            // Elementos de filtro
+            const filterCnpj = document.getElementById('filter-cnpj');
+            const filterNome = document.getElementById('filter-nome');
+            const filterType = document.getElementById('filter-type');
+            
+            // Configurações por arquivo
+            const file1CnpjColumn = document.getElementById('file1-cnpj-column');
+            const file1ValorColumn = document.getElementById('file1-valor-column');
+            const file1NomeColumn = document.getElementById('file1-nome-column');
+            const file1DataColumn = document.getElementById('file1-data-column');
+            const file1CnpjError = document.getElementById('file1-cnpj-error');
+            const file1ValorError = document.getElementById('file1-valor-error');
+            
+            const file2CnpjColumn = document.getElementById('file2-cnpj-column');
+            const file2ValorColumn = document.getElementById('file2-valor-column');
+            const file2NomeColumn = document.getElementById('file2-nome-column');
+            const file2DataColumn = document.getElementById('file2-data-column');
+            const file2CnpjError = document.getElementById('file2-cnpj-error');
+            const file2ValorError = document.getElementById('file2-valor-error');
+            
+            // Configurações globais
+            const toleranciaInput = document.getElementById('tolerancia');
+            const ignorarCaracteres = document.getElementById('ignorar-caracteres');
+            const compararNomes = document.getElementById('comparar-nomes');
+            const linhaCabecalho = document.getElementById('linha-cabecalho');
+            const criteriaSelect = document.getElementById('criteria');
+            
+            let file1Data = null;
+            let file2Data = null;
+            let file1Headers = [];
+            let file2Headers = [];
+            let analysisResults = null;
+            let filteredResults = null;
+            let debugData = [];
+
+            // Toggle para informações de debug
+            debugToggle.addEventListener('click', function() {
+                if (debugInfo.style.display === 'none') {
+                    debugInfo.style.display = 'block';
+                    debugToggle.textContent = 'Ocultar informações de debug';
+                } else {
+                    debugInfo.style.display = 'none';
+                    debugToggle.textContent = 'Mostrar informações de debug';
+                }
+            });
+
+            // Configuração das abas
+            configTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Remove a classe active de todas as abas e conteúdos
+                    document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.config-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Adiciona a classe active à aba e conteúdo clicados
+                    tab.classList.add('active');
+                    document.getElementById(`${tabId}-config`).classList.add('active');
+                });
+            });
+
+            // Event listeners para os inputs de arquivo
+            file1Input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validar tipo de arquivo
+                    if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                        showError(file1Error, 'Por favor, selecione um arquivo Excel (.xlsx ou .xls)');
+                        return;
+                    }
+                    
+                    // Validar tamanho do arquivo (máximo 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        showError(file1Error, 'O arquivo é muito grande. Tamanho máximo: 10MB');
+                        return;
+                    }
+                    
+                    clearError(file1Error);
+                    file1Name.textContent = file.name;
+                    readFile(file, 1);
+                }
+            });
+
+            file2Input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validar tipo de arquivo
+                    if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                        showError(file2Error, 'Por favor, selecione um arquivo Excel (.xlsx ou .xls)');
+                        return;
+                    }
+                    
+                    // Validar tamanho do arquivo (máximo 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        showError(file2Error, 'O arquivo é muito grande. Tamanho máximo: 10MB');
+                        return;
+                    }
+                    
+                    clearError(file2Error);
+                    file2Name.textContent = file.name;
+                    readFile(file, 2);
+                }
+            });
+
+            // Event listeners para filtros
+            filterCnpj.addEventListener('input', applyFilters);
+            filterNome.addEventListener('input', applyFilters);
+            filterType.addEventListener('change', applyFilters);
+
+            // Função para mostrar mensagem de erro
+            function showError(element, message) {
+                element.textContent = message;
+                element.style.display = 'block';
+            }
+
+            // Função para limpar mensagem de erro
+            function clearError(element) {
+                element.textContent = '';
+                element.style.display = 'none';
+            }
+
+            // Função para mostrar mensagem global de erro
+            function showGlobalError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+
+            // Função para mostrar mensagem global de sucesso
+            function showGlobalSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+            }
+
+            // Função para adicionar informações de debug
+            function addDebugInfo(message) {
+                debugData.push(message);
+                debugInfo.innerHTML = debugData.join('<br>');
+            }
+
+            // Função para ler arquivos Excel
+            function readFile(file, fileNumber) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        // Verificar se a planilha tem dados
+                        if (workbook.SheetNames.length === 0) {
+                            throw new Error('O arquivo não contém planilhas.');
+                        }
+                        
+                        // Assume que estamos lendo a primeira planilha
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                        
+                        // Verificar se a planilha tem dados suficientes
+                        if (jsonData.length < 2) {
+                            throw new Error('O arquivo não contém dados suficientes.');
+                        }
+                        
+                        if (fileNumber === 1) {
+                            file1Data = jsonData;
+                            file1Headers = jsonData.length > 0 ? jsonData[0] : [];
+                            updateColumnDropdowns(file1Headers, 'file1');
+                        } else {
+                            file2Data = jsonData;
+                            file2Headers = jsonData.length > 0 ? jsonData[0] : [];
+                            updateColumnDropdowns(file2Headers, 'file2');
+                        }
+                        
+                        // Habilita o botão de análise se ambos os arquivos foram carregados
+                        if (file1Data && file2Data) {
+                            validateConfiguration();
+                        }
+                        
+                        showGlobalSuccess(`Arquivo ${fileNumber} carregado com sucesso!`);
+                    } catch (error) {
+                        const errorElement = fileNumber === 1 ? file1Error : file2Error;
+                        showError(errorElement, `Erro ao ler o arquivo: ${error.message}`);
+                        
+                        if (fileNumber === 1) {
+                            file1Data = null;
+                        } else {
+                            file2Data = null;
+                        }
+                        analyzeBtn.disabled = true;
+                    }
+                };
+                
+                reader.onerror = function() {
+                    const errorElement = fileNumber === 1 ? file1Error : file2Error;
+                    showError(errorElement, 'Erro ao ler o arquivo. Tente novamente.');
+                    
+                    if (fileNumber === 1) {
+                        file1Data = null;
+                    } else {
+                        file2Data = null;
+                    }
+                    analyzeBtn.disabled = true;
+                };
+                
+                reader.readAsArrayBuffer(file);
+            }
+
+            // Validar configuração antes de habilitar o botão de análise
+            function validateConfiguration() {
+                let isValid = true;
+                
+                // Validar colunas do arquivo 1
+                if (!file1CnpjColumn.value) {
+                    showError(file1CnpjError, 'Selecione uma coluna para CNPJ/CPF');
+                    isValid = false;
+                } else {
+                    clearError(file1CnpjError);
+                }
+                
+                if (!file1ValorColumn.value) {
+                    showError(file1ValorError, 'Selecione uma coluna para Valor');
+                    isValid = false;
+                } else {
+                    clearError(file1ValorError);
+                }
+                
+                // Validar colunas do arquivo 2
+                if (!file2CnpjColumn.value) {
+                    showError(file2CnpjError, 'Selecione uma coluna para CNPJ/CPF');
+                    isValid = false;
+                } else {
+                    clearError(file2CnpjError);
+                }
+                
+                if (!file2ValorColumn.value) {
+                    showError(file2ValorError, 'Selecione uma coluna para Valor');
+                    isValid = false;
+                } else {
+                    clearError(file2ValorError);
+                }
+                
+                analyzeBtn.disabled = !isValid;
+                return isValid;
+            }
+
+            // Atualiza os dropdowns de colunas para cada arquivo
+            function updateColumnDropdowns(headers, filePrefix) {
+                const cnpjSelect = document.getElementById(`${filePrefix}-cnpj-column`);
+                const valorSelect = document.getElementById(`${filePrefix}-valor-column`);
+                const nomeSelect = document.getElementById(`${filePrefix}-nome-column`);
+                const dataSelect = document.getElementById(`${filePrefix}-data-column`);
+                
+                // Limpa os dropdowns
+                cnpjSelect.innerHTML = '<option value="">Selecionar coluna</option>';
+                valorSelect.innerHTML = '<option value="">Selecionar coluna</option>';
+                nomeSelect.innerHTML = '<option value="">Selecionar coluna</option>';
+                dataSelect.innerHTML = '<option value="">Selecionar coluna</option>';
+                
+                // Preenche os dropdowns com os cabeçalhos
+                headers.forEach((header, index) => {
+                    if (header) {
+                        cnpjSelect.innerHTML += `<option value="${index}">${header}</option>`;
+                        valorSelect.innerHTML += `<option value="${index}">${header}</option>`;
+                        nomeSelect.innerHTML += `<option value="${index}">${header}</option>`;
+                        dataSelect.innerHTML += `<option value="${index}">${header}</option>`;
+                    }
+                });
+                
+                // Tenta prever automaticamente as colunas
+                headers.forEach((header, index) => {
+                    const headerLower = header.toLowerCase();
+                    if (headerLower.includes('cnpj') || headerLower.includes('cpf') || headerLower.includes('documento')) {
+                        cnpjSelect.value = index;
+                    } else if (headerLower.includes('valor') || headerLower.includes('preço') || headerLower.includes('total')) {
+                        valorSelect.value = index;
+                    } else if (headerLower.includes('nome') || headerLower.includes('razão') || headerLower.includes('fornecedor')) {
+                        nomeSelect.value = index;
+                    } else if (headerLower.includes('data') || headerLower.includes('date')) {
+                        dataSelect.value = index;
+                    }
+                });
+                
+                // Valida a configuração após atualizar os dropdowns
+                if (file1Data && file2Data) {
+                    validateConfiguration();
+                }
+            }
+
+            // Event listener para o botão de análise
+            analyzeBtn.addEventListener('click', function() {
+                if (!file1Data || !file2Data) {
+                    showGlobalError('Por favor, selecione ambos os arquivos antes de analisar.');
+                    return;
+                }
+                
+                if (!validateConfiguration()) {
+                    showGlobalError('Por favor, configure corretamente as colunas antes de analisar.');
+                    return;
+                }
+                
+                // Limpar dados de debug anteriores
+                debugData = [];
+                debugInfo.innerHTML = '';
+                
+                loading.style.display = 'block';
+                analyzeBtn.disabled = true;
+                
+                // Usamos setTimeout para permitir que a animação de loading seja exibida
+                setTimeout(function() {
+                    analyzeFiles();
+                    loading.style.display = 'none';
+                    analyzeBtn.disabled = false;
+                }, 500);
+            });
+
+            // Normaliza CNPJ/CPF (remove caracteres não numéricos)
+            function normalizeCnpj(cnpj) {
+                if (!cnpj) return '';
+                return cnpj.toString().replace(/\D/g, '');
+            }
+
+            // Normaliza nome (remove espaços extras e converte para minúsculas)
+            function normalizeNome(nome) {
+                if (!nome) return '';
+                return nome.toString().toLowerCase().replace(/\s+/g, ' ').trim();
+            }
+
+            // Normaliza data para formato consistente
+            function normalizeData(data) {
+                if (!data) return '';
+                
+                // Se for um objeto Date, formata para string
+                if (data instanceof Date) {
+                    return data.toISOString().split('T')[0];
+                }
+                
+                // Tenta converter para data
+                const date = new Date(data);
+                if (!isNaN(date.getTime())) {
+                    return date.toISOString().split('T')[0];
+                }
+                
+                // Se não for uma data válida, retorna a string original
+                return data.toString();
+            }
+
+            // Normaliza valor para formato numérico
+            function normalizeValor(valor) {
+                if (typeof valor === 'number') return valor;
+                
+                // Remove caracteres não numéricos, exceto ponto e vírgula
+                const numStr = valor.toString().replace(/[^\d,.-]/g, '');
+                
+                // Substitui vírgula por ponto para parseFloat
+                const normalized = numStr.replace(',', '.');
+                
+                return parseFloat(normalized) || 0;
+            }
+
+            // Atualiza a barra de progresso
+            function updateProgress(percent, message) {
+                progressBar.style.width = `${percent}%`;
+                progressText.textContent = message || `${percent}% concluído`;
+            }
+
+            // Função para analisar os arquivos
+            function analyzeFiles() {
+                const cnpjCol1 = parseInt(file1CnpjColumn.value);
+                const valorCol1 = parseInt(file1ValorColumn.value);
+                const nomeCol1 = file1NomeColumn.value ? parseInt(file1NomeColumn.value) : -1;
+                const dataCol1 = file1DataColumn.value ? parseInt(file1DataColumn.value) : -1;
+                
+                const cnpjCol2 = parseInt(file2CnpjColumn.value);
+                const valorCol2 = parseInt(file2ValorColumn.value);
+                const nomeCol2 = file2NomeColumn.value ? parseInt(file2NomeColumn.value) : -1;
+                const dataCol2 = file2DataColumn.value ? parseInt(file2DataColumn.value) : -1;
+                
+                const tolerancia = parseFloat(toleranciaInput.value) || 0.01;
+                const ignoreChars = ignorarCaracteres.value === 'sim';
+                const compareNames = compararNomes.value === 'sim';
+                const headerRow = parseInt(linhaCabecalho.value) || 1;
+                
+                // Obter critérios selecionados
+                const selectedCriteria = [];
+                for (let option of criteriaSelect.options) {
+                    if (option.selected) {
+                        selectedCriteria.push(option.value);
+                    }
+                }
+                
+                addDebugInfo(`Critérios selecionados: ${selectedCriteria.join(', ')}`);
+                addDebugInfo(`Tolerância: ${tolerancia}`);
+                addDebugInfo(`Ignorar caracteres: ${ignoreChars}`);
+                addDebugInfo(`Comparar nomes: ${compareNames}`);
+                
+                // Pula as linhas de cabeçalho
+                const data1 = file1Data.slice(headerRow);
+                const data2 = file2Data.slice(headerRow);
+                
+                addDebugInfo(`Arquivo 1: ${data1.length} linhas de dados`);
+                addDebugInfo(`Arquivo 2: ${data2.length} linhas de dados`);
+                
+                // Conjuntos para armazenar os resultados
+                const matches = [];
+                const onlyInFile1 = [];
+                const onlyInFile2 = [];
+                
+                // Mapa para verificação rápida dos pagamentos no arquivo 2
+                const file2Map = new Map();
+                
+                updateProgress(10, 'Processando Arquivo 2...');
+                
+                // Preprocessa o arquivo 2
+                data2.forEach((row, index) => {
+                    if (row.length > Math.max(cnpjCol2, valorCol2, nomeCol2, dataCol2)) {
+                        const cnpj = ignoreChars ? normalizeCnpj(row[cnpjCol2]) : row[cnpjCol2]?.toString() || '';
+                        const valor = normalizeValor(row[valorCol2]);
+                        const nome = nomeCol2 >= 0 && row[nomeCol2] ? (compareNames ? normalizeNome(row[nomeCol2]) : row[nomeCol2]) : '';
+                        const data = dataCol2 >= 0 && row[dataCol2] ? normalizeData(row[dataCol2]) : '';
+                        
+                        if (cnpj && !isNaN(valor)) {
+                            // Cria uma chave única para este registro
+                            const key = `${cnpj}_${valor.toFixed(2)}`;
+                            file2Map.set(key, { row, index: index + headerRow + 1, cnpj, valor, nome, data });
+                        }
+                    }
+                });
+                
+                addDebugInfo(`Arquivo 2 mapeado: ${file2Map.size} registros válidos`);
+                
+                updateProgress(40, 'Processando Arquivo 1...');
+                
+                // Verifica correspondências no arquivo 1
+                const matchedInFile2 = new Set();
+                const totalRows = data1.length;
+                
+                data1.forEach((row, index) => {
+                    if (row.length > Math.max(cnpjCol1, valorCol1, nomeCol1, dataCol1)) {
+                        const cnpj = ignoreChars ? normalizeCnpj(row[cnpjCol1]) : row[cnpjCol1]?.toString() || '';
+                        const valor = normalizeValor(row[valorCol1]);
+                        const nome = nomeCol1 >= 0 && row[nomeCol1] ? (compareNames ? normalizeNome(row[nomeCol1]) : row[nomeCol1]) : '';
+                        const data = dataCol1 >= 0 && row[dataCol1] ? normalizeData(row[dataCol1]) : '';
+                        
+                        if (cnpj && !isNaN(valor)) {
+                            // Cria uma chave única para este registro
+                            const key = `${cnpj}_${valor.toFixed(2)}`;
+                            const match = file2Map.get(key);
+                            
+                            if (match) {
+                                // Verifica critérios adicionais se necessário
+                                let criteriaMatch = true;
+                                
+                                if (selectedCriteria.includes('nome') && nome && match.nome) {
+                                    if (compareNames) {
+                                        criteriaMatch = criteriaMatch && normalizeNome(nome) === normalizeNome(match.nome);
+                                    } else {
+                                        criteriaMatch = criteriaMatch && nome === match.nome;
+                                    }
+                                    
+                                    if (!criteriaMatch) {
+                                        addDebugInfo(`Nome não corresponde: ${nome} vs ${match.nome}`);
+                                    }
+                                }
+                                
+                                if (selectedCriteria.includes('data') && data && match.data) {
+                                    criteriaMatch = criteriaMatch && normalizeData(data) === normalizeData(match.data);
+                                    
+                                    if (!criteriaMatch) {
+                                        addDebugInfo(`Data não corresponde: ${data} vs ${match.data}`);
+                                    }
+                                }
+                                
+                                if (criteriaMatch) {
+                                    // Correspondência exata encontrada
+                                    matches.push({
+                                        cnpj: cnpj,
+                                        valor: valor,
+                                        nome: nome,
+                                        data: data,
+                                        file1Row: row,
+                                        file2Row: match.row,
+                                        file1Index: index + headerRow + 1,
+                                        file2Index: match.index,
+                                        type: 'exact'
+                                    });
+                                    matchedInFile2.add(key);
+                                } else {
+                                    // Procura por correspondências com tolerância de valor
+                                    let found = false;
+                                    for (let [otherKey, value] of file2Map.entries()) {
+                                        const parts = otherKey.split('_');
+                                        const otherCnpj = parts[0];
+                                        const otherValor = parseFloat(parts[1]);
+                                        
+                                        // Verifica se o CNPJ corresponde e se o valor está dentro da tolerância
+                                        if (cnpj === otherCnpj && Math.abs(valor - otherValor) <= tolerancia) {
+                                            // Verifica critérios adicionais
+                                            let toleranceMatch = true;
+                                            
+                                            if (selectedCriteria.includes('nome') && nome && value.nome) {
+                                                if (compareNames) {
+                                                    toleranceMatch = toleranceMatch && normalizeNome(nome) === normalizeNome(value.nome);
+                                                } else {
+                                                    toleranceMatch = toleranceMatch && nome === value.nome;
+                                                }
+                                            }
+                                            
+                                            if (selectedCriteria.includes('data') && data && value.data) {
+                                                toleranceMatch = toleranceMatch && normalizeData(data) === normalizeData(value.data);
+                                            }
+                                            
+                                            if (toleranceMatch) {
+                                                matches.push({
+                                                    cnpj: cnpj,
+                                                    valor: valor,
+                                                    nome: nome,
+                                                    data: data,
+                                                    file1Row: row,
+                                                    file2Row: value.row,
+                                                    file1Index: index + headerRow + 1,
+                                                    file2Index: value.index,
+                                                    tolerancia: Math.abs(valor - otherValor),
+                                                    type: 'tolerance'
+                                                });
+                                                matchedInFile2.add(otherKey);
+                                                found = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (!found) {
+                                        onlyInFile1.push({
+                                            cnpj: cnpj,
+                                            valor: valor,
+                                            nome: nome,
+                                            data: data,
+                                            row: row,
+                                            index: index + headerRow + 1
+                                        });
+                                    }
+                                }
+                            } else {
+                                // Procura por correspondências com tolerância de valor
+                                let found = false;
+                                for (let [otherKey, value] of file2Map.entries()) {
+                                    const parts = otherKey.split('_');
+                                    const otherCnpj = parts[0];
+                                    const otherValor = parseFloat(parts[1]);
+                                    
+                                    // Verifica se o CNPJ corresponde e se o valor está dentro da tolerância
+                                    if (cnpj === otherCnpj && Math.abs(valor - otherValor) <= tolerancia) {
+                                        // Verifica critérios adicionais
+                                        let toleranceMatch = true;
+                                        
+                                        if (selectedCriteria.includes('nome') && nome && value.nome) {
+                                            if (compareNames) {
+                                                toleranceMatch = toleranceMatch && normalizeNome(nome) === normalizeNome(value.nome);
+                                            } else {
+                                                toleranceMatch = toleranceMatch && nome === value.nome;
+                                            }
+                                        }
+                                        
+                                        if (selectedCriteria.includes('data') && data && value.data) {
+                                            toleranceMatch = toleranceMatch && normalizeData(data) === normalizeData(value.data);
+                                        }
+                                        
+                                        if (toleranceMatch) {
+                                            matches.push({
+                                                cnpj: cnpj,
+                                                valor: valor,
+                                                nome: nome,
+                                                data: data,
+                                                file1Row: row,
+                                                file2Row: value.row,
+                                                file1Index: index + headerRow + 1,
+                                                file2Index: value.index,
+                                                tolerancia: Math.abs(valor - otherValor),
+                                                type: 'tolerance'
+                                            });
+                                            matchedInFile2.add(otherKey);
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                if (!found) {
+                                    onlyInFile1.push({
+                                        cnpj: cnpj,
+                                        valor: valor,
+                                        nome: nome,
+                                        data: data,
+                                        row: row,
+                                        index: index + headerRow + 1
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Atualiza o progresso
+                    if (index % 10 === 0) {
+                        const progress = 40 + Math.floor((index / totalRows) * 50);
+                        updateProgress(progress);
+                    }
+                });
+                
+                updateProgress(90, 'Buscando diferenças no Arquivo 2...');
+                
+                // Encontra pagamentos apenas no arquivo 2
+                data2.forEach((row, index) => {
+                    if (row.length > Math.max(cnpjCol2, valorCol2, nomeCol2, dataCol2)) {
+                        const cnpj = ignoreChars ? normalizeCnpj(row[cnpjCol2]) : row[cnpjCol2]?.toString() || '';
+                        const valor = normalizeValor(row[valorCol2]);
+                        const nome = nomeCol2 >= 0 && row[nomeCol2] ? (compareNames ? normalizeNome(row[nomeCol2]) : row[nomeCol2]) : '';
+                        const data = dataCol2 >= 0 && row[dataCol2] ? normalizeData(row[dataCol2]) : '';
+                        
+                        if (cnpj && !isNaN(valor)) {
+                            const key = `${cnpj}_${valor.toFixed(2)}`;
+                            if (!matchedInFile2.has(key)) {
+                                onlyInFile2.push({
+                                    cnpj: cnpj,
+                                    valor: valor,
+                                    nome: nome,
+                                    data: data,
+                                    row: row,
+                                    index: index + headerRow + 1
+                                });
+                            }
+                        }
+                    }
+                });
+                
+                updateProgress(100, 'Análise concluída!');
+                
+                // Salva os resultados para uso posterior no download
+                analysisResults = {
+                    matches,
+                    onlyInFile1,
+                    onlyInFile2,
+                    config: {
+                        cnpjCol1,
+                        valorCol1,
+                        nomeCol1,
+                        dataCol1,
+                        cnpjCol2,
+                        valorCol2,
+                        nomeCol2,
+                        dataCol2,
+                        tolerancia,
+                        ignoreChars,
+                        compareNames,
+                        headerRow,
+                        selectedCriteria
+                    }
+                };
+                
+                // Log de resultados para debug
+                addDebugInfo(`Correspondências encontradas: ${matches.length}`);
+                addDebugInfo(`Apenas no Arquivo 1: ${onlyInFile1.length}`);
+                addDebugInfo(`Apenas no Arquivo 2: ${onlyInFile2.length}`);
+                
+                // Verificação de integridade
+                const totalFile1 = matches.length + onlyInFile1.length;
+                const totalFile2 = matches.length + onlyInFile2.length;
+                addDebugInfo(`Total de registros no Arquivo 1: ${totalFile1}`);
+                addDebugInfo(`Total de registros no Arquivo 2: ${totalFile2}`);
+                
+                // Atualiza contadores
+                matchCount.textContent = matches.length;
+                onlyFile1Count.textContent = onlyInFile1.length;
+                onlyFile2Count.textContent = onlyInFile2.length;
+                
+                // Exibe os resultados
+                displayResults(matches, onlyInFile1, onlyInFile2);
+                
+                // Mostra a seção de resultados
+                resultsSection.style.display = 'block';
+            }
+
+            // Formata CNPJ/CPF
+            function formatCnpj(cnpj) {
+                if (!cnpj) return '';
+                
+                if (cnpj.length === 11) {
+                    return cnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                } else if (cnpj.length === 14) {
+                    return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                }
+                return cnpj;
+            }
+
+            // Formata valor monetário
+            function formatValor(valor) {
+                return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+            }
+
+            // Aplica filtros aos resultados
+            function applyFilters() {
+                if (!analysisResults) return;
+                
+                const cnpjFilter = filterCnpj.value.toLowerCase();
+                const nomeFilter = filterNome.value.toLowerCase();
+                const typeFilter = filterType.value;
+                
+                let filteredMatches = analysisResults.matches;
+                let filteredOnlyInFile1 = analysisResults.onlyInFile1;
+                let filteredOnlyInFile2 = analysisResults.onlyInFile2;
+                
+                // Aplicar filtro por CNPJ
+                if (cnpjFilter) {
+                    filteredMatches = filteredMatches.filter(item => 
+                        item.cnpj && item.cnpj.toLowerCase().includes(cnpjFilter)
+                    );
+                    filteredOnlyInFile1 = filteredOnlyInFile1.filter(item => 
+                        item.cnpj && item.cnpj.toLowerCase().includes(cnpjFilter)
+                    );
+                    filteredOnlyInFile2 = filteredOnlyInFile2.filter(item => 
+                        item.cnpj && item.cnpj.toLowerCase().includes(cnpjFilter)
+                    );
+                }
+                
+                // Aplicar filtro por nome
+                if (nomeFilter) {
+                    filteredMatches = filteredMatches.filter(item => 
+                        item.nome && item.nome.toLowerCase().includes(nomeFilter)
+                    );
+                    filteredOnlyInFile1 = filteredOnlyInFile1.filter(item => 
+                        item.nome && item.nome.toLowerCase().includes(nomeFilter)
+                    );
+                    filteredOnlyInFile2 = filteredOnlyInFile2.filter(item => 
+                        item.nome && item.nome.toLowerCase().includes(nomeFilter)
+                    );
+                }
+                
+                // Aplicar filtro por tipo
+                if (typeFilter !== 'all') {
+                    if (typeFilter === 'matches') {
+                        filteredOnlyInFile1 = [];
+                        filteredOnlyInFile2 = [];
+                    } else if (typeFilter === 'only-file1') {
+                        filteredMatches = [];
+                        filteredOnlyInFile2 = [];
+                    } else if (typeFilter === 'only-file2') {
+                        filteredMatches = [];
+                        filteredOnlyInFile1 = [];
+                    }
+                }
+                
+                // Salva resultados filtrados
+                filteredResults = {
+                    matches: filteredMatches,
+                    onlyInFile1: filteredOnlyInFile1,
+                    onlyInFile2: filteredOnlyInFile2
+                };
+                
+                // Exibe os resultados filtrados
+                displayResults(filteredMatches, filteredOnlyInFile1, filteredOnlyInFile2);
+                
+                // Atualiza contadores
+                matchCount.textContent = filteredMatches.length;
+                onlyFile1Count.textContent = filteredOnlyInFile1.length;
+                onlyFile2Count.textContent = filteredOnlyInFile2.length;
+            }
+
+            // Função para exibir os resultados na interface
+            function displayResults(matches, onlyInFile1, onlyInFile2) {
+                commonResults.innerHTML = '';
+                differentResults.innerHTML = '';
+                
+                if (matches.length === 0) {
+                    commonResults.innerHTML = '<div class="result-item">Nenhum pagamento correspondente encontrado.</div>';
+                } else {
+                    matches.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'result-item';
+                        
+                        let content = `<strong>${formatCnpj(item.cnpj)}</strong> - ${formatValor(item.valor)}`;
+                        if (item.nome) content += ` - ${item.nome}`;
+                        if (item.tolerancia) content += ` <span class="result-details">(Diferença: ${formatValor(item.tolerancia)})</span>`;
+                        if (item.type === 'tolerance') content += ` <span class="result-details">(Correspondência por tolerância)</span>`;
+                        content += ` <span class="result-details">[Arq1: Linha ${item.file1Index}, Arq2: Linha ${item.file2Index}]</span>`;
+                        
+                        div.innerHTML = content;
+                        commonResults.appendChild(div);
+                    });
+                }
+                
+                if (onlyInFile1.length === 0 && onlyInFile2.length === 0) {
+                    differentResults.innerHTML = '<div class="result-item">Nenhuma diferença encontrada.</div>';
+                } else {
+                    onlyInFile1.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'result-item';
+                        
+                        let content = `<strong>${formatCnpj(item.cnpj)}</strong> - ${formatValor(item.valor)}`;
+                        if (item.nome) content += ` - ${item.nome}`;
+                        content += ` <span class="result-details">[Apenas no Arquivo 1 - Linha ${item.index}]</span>`;
+                        
+                        div.innerHTML = content;
+                        differentResults.appendChild(div);
+                    });
+                    
+                    onlyInFile2.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'result-item';
+                        
+                        let content = `<strong>${formatCnpj(item.cnpj)}</strong> - ${formatValor(item.valor)}`;
+                        if (item.nome) content += ` - ${item.nome}`;
+                        content += ` <span class="result-details">[Apenas no Arquivo 2 - Linha ${item.index}]</span>`;
+                        
+                        div.innerHTML = content;
+                        differentResults.appendChild(div);
+                    });
+                }
+            }
+
+            // Event listener para o botão de download
+            downloadBtn.addEventListener('click', function() {
+                if (!analysisResults) {
+                    showGlobalError('Nenhum resultado para exportar. Por favor, analise os arquivos primeiro.');
+                    return;
+                }
+                
+                // Usa resultados filtrados se disponíveis, senão usa todos
+                const resultsToExport = filteredResults || analysisResults;
+                
+                // Cria uma nova pasta de trabalho
+                const wb = XLSX.utils.book_new();
+                
+                // Adiciona planilha com correspondências
+                const matchesData = [
+                    ['CNPJ/CPF', 'Valor', 'Nome', 'Data', 'Linha no Arquivo 1', 'Linha no Arquivo 2', 'Diferença de Valor', 'Tipo de Correspondência']
+                ];
+                
+                resultsToExport.matches.forEach(item => {
+                    matchesData.push([
+                        formatCnpj(item.cnpj),
+                        item.valor,
+                        item.nome || '',
+                        item.data || '',
+                        item.file1Index,
+                        item.file2Index,
+                        item.tolerancia || 0,
+                        item.type === 'tolerance' ? 'Por tolerância' : 'Exata'
+                    ]);
+                });
+                
+                const matchesWs = XLSX.utils.aoa_to_sheet(matchesData);
+                XLSX.utils.book_append_sheet(wb, matchesWs, 'Correspondências');
+                
+                // Adiciona planilha com apenas no arquivo 1
+                const onlyFile1Data = [
+                    ['CNPJ/CPF', 'Valor', 'Nome', 'Data', 'Linha no Arquivo 1']
+                ];
+                
+                resultsToExport.onlyInFile1.forEach(item => {
+                    onlyFile1Data.push([
+                        formatCnpj(item.cnpj),
+                        item.valor,
+                        item.nome || '',
+                        item.data || '',
+                        item.index
+                    ]);
+                });
+                
+                const onlyFile1Ws = XLSX.utils.aoa_to_sheet(onlyFile1Data);
+                XLSX.utils.book_append_sheet(wb, onlyFile1Ws, 'Apenas no Arquivo 1');
+                
+                // Adiciona planilha com apenas no arquivo 2
+                const onlyFile2Data = [
+                    ['CNPJ/CPF', 'Valor', 'Nome', 'Data', 'Linha no Arquivo 2']
+                ];
+                
+                resultsToExport.onlyInFile2.forEach(item => {
+                    onlyFile2Data.push([
+                        formatCnpj(item.cnpj),
+                        item.valor,
+                        item.nome || '',
+                        item.data || '',
+                        item.index
+                    ]);
+                });
+                
+                const onlyFile2Ws = XLSX.utils.aoa_to_sheet(onlyFile2Data);
+                XLSX.utils.book_append_sheet(wb, onlyFile2Ws, 'Apenas no Arquivo 2');
+                
+                // Adiciona planilha com resumo
+                const summaryData = [
+                    ['Relatório de Análise de Pagamentos'],
+                    [''],
+                    ['Data da análise', new Date().toLocaleDateString('pt-BR')],
+                    [''],
+                    ['Total de correspondências', resultsToExport.matches.length],
+                    ['Total apenas no Arquivo 1', resultsToExport.onlyInFile1.length],
+                    ['Total apenas no Arquivo 2', resultsToExport.onlyInFile2.length],
+                    [''],
+                    ['Configurações utilizadas:'],
+                    ['Tolerância de valores', analysisResults.config.tolerancia],
+                    ['Ignorar caracteres especiais', analysisResults.config.ignoreChars ? 'Sim' : 'Não'],
+                    ['Comparar nomes', analysisResults.config.compareNames ? 'Sim' : 'Não'],
+                    ['Linha do cabeçalho', analysisResults.config.headerRow],
+                    ['Critérios adicionais', analysisResults.config.selectedCriteria.join(', ')],
+                    [''],
+                    ['Arquivo 1:'],
+                    ['Coluna CNPJ/CPF', file1Headers[analysisResults.config.cnpjCol1]],
+                    ['Coluna Valor', file1Headers[analysisResults.config.valorCol1]],
+                    ['Coluna Nome', analysisResults.config.nomeCol1 >= 0 ? file1Headers[analysisResults.config.nomeCol1] : 'Não utilizada'],
+                    ['Coluna Data', analysisResults.config.dataCol1 >= 0 ? file1Headers[analysisResults.config.dataCol1] : 'Não utilizada'],
+                    [''],
+                    ['Arquivo 2:'],
+                    ['Coluna CNPJ/CPF', file2Headers[analysisResults.config.cnpjCol2]],
+                    ['Coluna Valor', file2Headers[analysisResults.config.valorCol2]],
+                    ['Coluna Nome', analysisResults.config.nomeCol2 >= 0 ? file2Headers[analysisResults.config.nomeCol2] : 'Não utilizada'],
+                    ['Coluna Data', analysisResults.config.dataCol2 >= 0 ? file2Headers[analysisResults.config.dataCol2] : 'Não utilizada']
+                ];
+                
+                const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+                XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumo');
+                
+                // Gera o arquivo Excel e faz o download
+                XLSX.writeFile(wb, 'relatorio_pagamentos.xlsx');
+                showGlobalSuccess('Relatório exportado com sucesso!');
+            });
+        });
+    </script>
+</body>
+</html>
