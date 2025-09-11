@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnalisadorExcel - Versão Melhorada</title>
+    <title>AnalisadorExcel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -229,7 +229,7 @@
             margin-bottom: 30px;
         }
 
-        .common, .different {
+        .common, .different, .doubtful {
             flex: 1;
             min-width: 300px;
             background-color: #f8f9fa;
@@ -239,7 +239,7 @@
             overflow-y: auto;
         }
 
-        .common h3, .different h3 {
+        .common h3, .different h3, .doubtful h3 {
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid;
@@ -257,6 +257,11 @@
         .different h3 {
             color: var(--danger);
             border-color: var(--danger);
+        }
+
+        .doubtful h3 {
+            color: var(--warning);
+            border-color: var(--warning);
         }
 
         .result-item {
@@ -372,6 +377,10 @@
             border-left: 4px solid var(--success);
         }
 
+        .doubtful-matches {
+            border-left: 4px solid var(--warning);
+        }
+
         .filters {
             display: flex;
             flex-wrap: wrap;
@@ -460,8 +469,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>AnalisadorExcel - Versão Melhorada</h1>
-            <p class="description">Faça upload de dois arquivos Excel com dados de pagamentos para identificar correspondências mesmo com diferenças de formatação (CNPJ, nomes, etc.) e gere um relatório detalhado.</p>
+            <h1>AnalisadorExcel</h1>
+            <p class="description">Faça upload de dois arquivos Excel com dados de pagamentos para identificar correspondências mesmo com diferenças de formatação e gere um relatório detalhado.</p>
         </header>
 
         <div id="error-message" class="error-message"></div>
@@ -497,28 +506,28 @@
             <div class="config-content active" id="file1-config">
                 <div class="config-options">
                     <div class="config-group">
-                        <label for="file1-cnpj-column">Coluna de Comparação 01 (CNPJ/CPF):</label>
-                        <select id="file1-cnpj-column">
+                        <label for="file1-coluna1">Coluna de Comparação 01:</label>
+                        <select id="file1-coluna1">
                             <option value="">Selecionar coluna</option>
                         </select>
-                        <div id="file1-cnpj-error" class="config-error">Selecione uma coluna para CNPJ/CPF</div>
+                        <div id="file1-coluna1-error" class="config-error">Selecione uma coluna para Comparação 01</div>
                     </div>
                     <div class="config-group">
-                        <label for="file1-valor-column">Coluna de Comparação 02 (Valor):</label>
-                        <select id="file1-valor-column">
+                        <label for="file1-coluna2">Coluna de Comparação 02:</label>
+                        <select id="file1-coluna2">
                             <option value="">Selecionar coluna</option>
                         </select>
-                        <div id="file1-valor-error" class="config-error">Selecione uma coluna para Valor</div>
+                        <div id="file1-coluna2-error" class="config-error">Selecione uma coluna para Comparação 02</div>
                     </div>
                     <div class="config-group">
-                        <label for="file1-nome-column">Coluna de Comparação 03 (Nome):</label>
-                        <select id="file1-nome-column">
+                        <label for="file1-coluna3">Coluna de Comparação 03:</label>
+                        <select id="file1-coluna3">
                             <option value="">Selecionar coluna</option>
                         </select>
                     </div>
                     <div class="config-group">
-                        <label for="file1-data-column">Coluna de Comparação 04 (Data):</label>
-                        <select id="file1-data-column">
+                        <label for="file1-coluna4">Coluna de Comparação 04:</label>
+                        <select id="file1-coluna4">
                             <option value="">Selecionar coluna</option>
                         </select>
                     </div>
@@ -528,28 +537,28 @@
             <div class="config-content" id="file2-config">
                 <div class="config-options">
                     <div class="config-group">
-                        <label for="file2-cnpj-column">Coluna de Comparação 01 (CNPJ/CPF):</label>
-                        <select id="file2-cnpj-column">
+                        <label for="file2-coluna1">Coluna de Comparação 01:</label>
+                        <select id="file2-coluna1">
                             <option value="">Selecionar coluna</option>
                         </select>
-                        <div id="file2-cnpj-error" class="config-error">Selecione uma coluna para CNPJ/CPF</div>
+                        <div id="file2-coluna1-error" class="config-error">Selecione uma coluna para Comparação 01</div>
                     </div>
                     <div class="config-group">
-                        <label for="file2-valor-column">Coluna de Comparação 02 (Valor):</label>
-                        <select id="file2-valor-column">
+                        <label for="file2-coluna2">Coluna de Comparação 02:</label>
+                        <select id="file2-coluna2">
                             <option value="">Selecionar coluna</option>
                         </select>
-                        <div id="file2-valor-error" class="config-error">Selecione uma coluna para Valor</div>
+                        <div id="file2-coluna2-error" class="config-error">Selecione uma coluna para Comparação 02</div>
                     </div>
                     <div class="config-group">
-                        <label for="file2-nome-column">Coluna de Comparação 03 (Nome):</label>
-                        <select id="file2-nome-column">
+                        <label for="file2-coluna3">Coluna de Comparação 03:</label>
+                        <select id="file2-coluna3">
                             <option value="">Selecionar coluna</option>
                         </select>
                     </div>
                     <div class="config-group">
-                        <label for="file2-data-column">Coluna de Comparação 04 (Data):</label>
-                        <select id="file2-data-column">
+                        <label for="file2-coluna4">Coluna de Comparação 04:</label>
+                        <select id="file2-coluna4">
                             <option value="">Selecionar coluna</option>
                         </select>
                     </div>
@@ -563,18 +572,22 @@
                         <input type="number" id="tolerancia" value="0.01" step="0.01" min="0">
                     </div>
                     <div class="config-group">
-                        <label for="ignorar-caracteres">Ignorar caracteres especiais no CNPJ:</label>
+                        <label for="ignorar-caracteres">Ignorar caracteres especiais na Coluna 01:</label>
                         <select id="ignorar-caracteres">
                             <option value="sim" selected>Sim</option>
                             <option value="nao">Não</option>
                         </select>
                     </div>
                     <div class="config-group">
-                        <label for="comparar-nomes">Comparar nomes (similaridade):</label>
-                        <select id="comparar-nomes">
+                        <label for="comparar-coluna3">Comparar Coluna 03 (similaridade):</label>
+                        <select id="comparar-coluna3">
                             <option value="sim" selected>Sim</option>
                             <option value="nao">Não</option>
                         </select>
+                    </div>
+                    <div class="config-group">
+                        <label for="tolerancia-duvidosos">Tolerância para correspondências duvidosas:</label>
+                        <input type="number" id="tolerancia-duvidosos" value="0.05" step="0.01" min="0">
                     </div>
                 </div>
             </div>
@@ -606,16 +619,20 @@
                     <div class="summary-number" id="matches-count">0</div>
                     <div class="summary-label">Correspondências</div>
                 </div>
+                <div class="summary-item doubtful-matches">
+                    <div class="summary-number" id="doubtful-count">0</div>
+                    <div class="summary-label">Correspondências Duvidosas</div>
+                </div>
             </div>
             
             <div class="filters">
                 <div class="filter-group">
-                    <label for="filter-cnpj">Filtrar por CNPJ:</label>
-                    <input type="text" id="filter-cnpj" placeholder="Digite o CNPJ...">
+                    <label for="filter-coluna1">Filtrar por Coluna 01:</label>
+                    <input type="text" id="filter-coluna1" placeholder="Digite o valor...">
                 </div>
                 <div class="filter-group">
-                    <label for="filter-nome">Filtrar por Nome:</label>
-                    <input type="text" id="filter-nome" placeholder="Digite o nome...">
+                    <label for="filter-coluna3">Filtrar por Coluna 03:</label>
+                    <input type="text" id="filter-coluna3" placeholder="Digite o valor...">
                 </div>
                 <div class="filter-group">
                     <label for="filter-status">Filtrar por Status:</label>
@@ -624,6 +641,7 @@
                         <option value="apenas-arquivo1">Apenas no Arquivo 1</option>
                         <option value="apenas-arquivo2">Apenas no Arquivo 2</option>
                         <option value="correspondentes">Correspondentes</option>
+                        <option value="duvidosos">Correspondências Duvidosas</option>
                     </select>
                 </div>
             </div>
@@ -632,6 +650,10 @@
                 <div class="common">
                     <h3>Correspondências Encontradas</h3>
                     <div id="common-results"></div>
+                </div>
+                <div class="doubtful">
+                    <h3>Correspondências Duvidosas</h3>
+                    <div id="doubtful-results"></div>
                 </div>
                 <div class="different">
                     <h3>Divergências</h3>
@@ -653,18 +675,21 @@
         let file1Columns = [];
         let file2Columns = [];
         let results = null;
+        let file1Name = '';
+        let file2Name = '';
 
         // Elementos DOM
         const file1Input = document.getElementById('file1');
         const file2Input = document.getElementById('file2');
-        const file1Name = document.getElementById('file1-name');
-        const file2Name = document.getElementById('file2-name');
+        const file1NameDisplay = document.getElementById('file1-name');
+        const file2NameDisplay = document.getElementById('file2-name');
         const file1Error = document.getElementById('file1-error');
         const file2Error = document.getElementById('file2-error');
         const analyzeBtn = document.getElementById('analyze-btn');
         const loadingSection = document.querySelector('.loading');
         const resultsSection = document.getElementById('results-section');
         const commonResults = document.getElementById('common-results');
+        const doubtfulResults = document.getElementById('doubtful-results');
         const differentResults = document.getElementById('different-results');
         const downloadBtn = document.getElementById('download-btn');
         const errorMessage = document.getElementById('error-message');
@@ -703,6 +728,13 @@
             const fileErrorElement = document.getElementById(`file${fileNumber}-error`);
             
             if (!file) return;
+            
+            // Salvar o nome do arquivo
+            if (fileNumber === 1) {
+                file1Name = file.name;
+            } else {
+                file2Name = file.name;
+            }
             
             // Verificar se é um arquivo Excel
             if (!file.name.match(/\.(xlsx|xls)$/)) {
@@ -765,10 +797,10 @@
         function populateColumnDropdown(filePrefix, headers) {
             // Limpar dropdowns existentes
             const dropdowns = [
-                `${filePrefix}-cnpj-column`,
-                `${filePrefix}-valor-column`,
-                `${filePrefix}-nome-column`,
-                `${filePrefix}-data-column`
+                `${filePrefix}-coluna1`,
+                `${filePrefix}-coluna2`,
+                `${filePrefix}-coluna3`,
+                `${filePrefix}-coluna4`
             ];
             
             dropdowns.forEach(dropdownId => {
@@ -816,13 +848,13 @@
 
         function analyzeFiles() {
             // Validar seleção de colunas
-            const file1CnpjCol = document.getElementById('file1-cnpj-column').value;
-            const file1ValorCol = document.getElementById('file1-valor-column').value;
-            const file2CnpjCol = document.getElementById('file2-cnpj-column').value;
-            const file2ValorCol = document.getElementById('file2-valor-column').value;
+            const file1Coluna1 = document.getElementById('file1-coluna1').value;
+            const file1Coluna2 = document.getElementById('file1-coluna2').value;
+            const file2Coluna1 = document.getElementById('file2-coluna1').value;
+            const file2Coluna2 = document.getElementById('file2-coluna2').value;
             
-            if (file1CnpjCol === '' || file1ValorCol === '' || file2CnpjCol === '' || file2ValorCol === '') {
-                showError('Por favor, selecione as colunas obrigatórias (CNPJ e Valor) para ambos os arquivos.');
+            if (file1Coluna1 === '' || file1Coluna2 === '' || file2Coluna1 === '' || file2Coluna2 === '') {
+                showError('Por favor, selecione as colunas obrigatórias (Comparação 01 e 02) para ambos os arquivos.');
                 return;
             }
             
@@ -849,26 +881,27 @@
         function processComparison() {
             try {
                 // Obter configurações
-                const file1CnpjCol = parseInt(document.getElementById('file1-cnpj-column').value);
-                const file1ValorCol = parseInt(document.getElementById('file1-valor-column').value);
-                const file1NomeCol = document.getElementById('file1-nome-column').value;
-                const file1DataCol = document.getElementById('file1-data-column').value;
+                const file1Coluna1 = parseInt(document.getElementById('file1-coluna1').value);
+                const file1Coluna2 = parseInt(document.getElementById('file1-coluna2').value);
+                const file1Coluna3 = document.getElementById('file1-coluna3').value;
+                const file1Coluna4 = document.getElementById('file1-coluna4').value;
                 
-                const file2CnpjCol = parseInt(document.getElementById('file2-cnpj-column').value);
-                const file2ValorCol = parseInt(document.getElementById('file2-valor-column').value);
-                const file2NomeCol = document.getElementById('file2-nome-column').value;
-                const file2DataCol = document.getElementById('file2-data-column').value;
+                const file2Coluna1 = parseInt(document.getElementById('file2-coluna1').value);
+                const file2Coluna2 = parseInt(document.getElementById('file2-coluna2').value);
+                const file2Coluna3 = document.getElementById('file2-coluna3').value;
+                const file2Coluna4 = document.getElementById('file2-coluna4').value;
                 
                 const tolerancia = parseFloat(document.getElementById('tolerancia').value);
+                const toleranciaDuvidosos = parseFloat(document.getElementById('tolerancia-duvidosos').value);
                 const ignorarCaracteres = document.getElementById('ignorar-caracteres').value === 'sim';
-                const compararNomes = document.getElementById('comparar-nomes').value === 'sim';
+                const compararColuna3 = document.getElementById('comparar-coluna3').value === 'sim';
                 
                 // Processar dados (ignorar cabeçalhos)
-                const processedFile1 = processData(file1Data, 1, file1CnpjCol, file1ValorCol, file1NomeCol, file1DataCol, ignorarCaracteres);
-                const processedFile2 = processData(file2Data, 2, file2CnpjCol, file2ValorCol, file2NomeCol, file2DataCol, ignorarCaracteres);
+                const processedFile1 = processData(file1Data, 1, file1Coluna1, file1Coluna2, file1Coluna3, file1Coluna4, ignorarCaracteres);
+                const processedFile2 = processData(file2Data, 2, file2Coluna1, file2Coluna2, file2Coluna3, file2Coluna4, ignorarCaracteres);
                 
                 // Comparar os dados
-                results = compareData(processedFile1, processedFile2, tolerancia, compararNomes);
+                results = compareData(processedFile1, processedFile2, tolerancia, toleranciaDuvidosos, compararColuna3);
                 
                 // Exibir resultados
                 displayResults(results);
@@ -889,7 +922,7 @@
             }
         }
 
-        function processData(data, fileNumber, cnpjCol, valorCol, nomeCol, dataCol, ignorarCaracteres) {
+        function processData(data, fileNumber, coluna1, coluna2, coluna3, coluna4, ignorarCaracteres) {
             const processed = [];
             
             // Ignorar a primeira linha (cabeçalhos)
@@ -898,100 +931,101 @@
                 if (!row || row.length === 0) continue;
                 
                 // Extrair valores das colunas selecionadas
-                let cnpj = row[cnpjCol];
-                let valor = row[valorCol];
-                let nome = nomeCol !== '' ? row[nomeCol] : '';
-                let dataValue = dataCol !== '' ? row[dataCol] : '';
+                let valorColuna1 = row[coluna1];
+                let valorColuna2 = row[coluna2];
+                let valorColuna3 = coluna3 !== '' ? row[coluna3] : '';
+                let valorColuna4 = coluna4 !== '' ? row[coluna4] : '';
                 
-                // Processar CNPJ
-                if (cnpj !== undefined && cnpj !== null) {
-                    cnpj = cnpj.toString().trim();
+                // Processar Coluna 1
+                if (valorColuna1 !== undefined && valorColuna1 !== null) {
+                    valorColuna1 = valorColuna1.toString().trim();
                     
                     if (ignorarCaracteres) {
                         // Remover caracteres não numéricos
-                        cnpj = cnpj.replace(/\D/g, '');
+                        valorColuna1 = valorColuna1.replace(/\D/g, '');
                     }
                     
-                    // Se após a limpeza o CNPJ estiver vazio, pular esta linha
-                    if (cnpj === '') continue;
+                    // Se após a limpeza a coluna estiver vazia, pular esta linha
+                    if (valorColuna1 === '') continue;
                 } else {
-                    continue; // Pular linhas sem CNPJ
+                    continue; // Pular linhas sem valor na coluna 1
                 }
                 
-                // Processar valor
-                if (valor !== undefined && valor !== null) {
+                // Processar Coluna 2
+                if (valorColuna2 !== undefined && valorColuna2 !== null) {
                     // Converter para número, tratando diferentes formatos
-                    if (typeof valor === 'string') {
+                    if (typeof valorColuna2 === 'string') {
                         // Remover possíveis símbolos de moeda e espaços
-                        valor = valor.replace(/[^\d,.-]/g, '').replace(',', '.');
+                        valorColuna2 = valorColuna2.replace(/[^\d,.-]/g, '').replace(',', '.');
                     }
-                    valor = parseFloat(valor);
+                    valorColuna2 = parseFloat(valorColuna2);
                     
                     // Se não for um número válido, pular esta linha
-                    if (isNaN(valor)) continue;
+                    if (isNaN(valorColuna2)) continue;
                 } else {
-                    continue; // Pular linhas sem valor
+                    continue; // Pular linhas sem valor na coluna 2
                 }
                 
-                // Processar nome (se fornecido)
-                if (nome !== undefined && nome !== null) {
-                    nome = nome.toString().trim();
+                // Processar Coluna 3 (se fornecida)
+                if (valorColuna3 !== undefined && valorColuna3 !== null) {
+                    valorColuna3 = valorColuna3.toString().trim();
                 } else {
-                    nome = '';
+                    valorColuna3 = '';
                 }
                 
-                // Processar data (se fornecida)
-                if (dataValue !== undefined && dataValue !== null) {
-                    dataValue = dataValue.toString().trim();
+                // Processar Coluna 4 (se fornecida)
+                if (valorColuna4 !== undefined && valorColuna4 !== null) {
+                    valorColuna4 = valorColuna4.toString().trim();
                 } else {
-                    dataValue = '';
+                    valorColuna4 = '';
                 }
                 
                 // Adicionar à lista processada
                 processed.push({
                     file: fileNumber,
                     originalRow: row,
-                    cnpj: cnpj,
-                    valor: valor,
-                    nome: nome,
-                    data: dataValue
+                    coluna1: valorColuna1,
+                    coluna2: valorColuna2,
+                    coluna3: valorColuna3,
+                    coluna4: valorColuna4
                 });
             }
             
             return processed;
         }
 
-        function compareData(data1, data2, tolerancia, compararNomes) {
+        function compareData(data1, data2, tolerancia, toleranciaDuvidosos, compararColuna3) {
             const matches = [];
+            const doubtfulMatches = [];
             const onlyInFile1 = [];
             const onlyInFile2 = [...data2];
             
             // Para cada item no arquivo 1, verificar se existe correspondência no arquivo 2
             for (const item1 of data1) {
                 let foundMatch = false;
+                let foundDoubtfulMatch = false;
                 
                 for (let j = 0; j < onlyInFile2.length; j++) {
                     const item2 = onlyInFile2[j];
                     
-                    // Verificar se os CNPJs correspondem
-                    if (item1.cnpj === item2.cnpj) {
-                        // Verificar se os valores estão dentro da tolerância
-                        const diff = Math.abs(item1.valor - item2.valor);
+                    // Verificar se as Colunas 1 correspondem
+                    if (item1.coluna1 === item2.coluna1) {
+                        // Verificar se os valores da Coluna 2 estão dentro da tolerância
+                        const diff = Math.abs(item1.coluna2 - item2.coluna2);
                         
                         if (diff <= tolerancia) {
-                            // Verificar nomes se necessário
-                            let nomeMatch = true;
-                            if (compararNomes && item1.nome && item2.nome) {
-                                // Simples verificação de similaridade (poderia ser mais sofisticada)
-                                nomeMatch = areNamesSimilar(item1.nome, item2.nome);
+                            // Verificar Coluna 3 se necessário
+                            let coluna3Match = true;
+                            if (compararColuna3 && item1.coluna3 && item2.coluna3) {
+                                coluna3Match = areValuesSimilar(item1.coluna3, item2.coluna3);
                             }
                             
-                            if (nomeMatch) {
+                            if (coluna3Match) {
                                 // Encontrou uma correspondência
                                 matches.push({
                                     item1: item1,
                                     item2: item2,
-                                    valorDiff: diff
+                                    diff: diff
                                 });
                                 
                                 // Remover do array onlyInFile2
@@ -999,23 +1033,44 @@
                                 foundMatch = true;
                                 break;
                             }
+                        } else if (diff <= toleranciaDuvidosos) {
+                            // Verificar Coluna 3 se necessário
+                            let coluna3Match = true;
+                            if (compararColuna3 && item1.coluna3 && item2.coluna3) {
+                                coluna3Match = areValuesSimilar(item1.coluna3, item2.coluna3);
+                            }
+                            
+                            if (coluna3Match) {
+                                // Encontrou uma correspondência duvidosa
+                                doubtfulMatches.push({
+                                    item1: item1,
+                                    item2: item2,
+                                    diff: diff
+                                });
+                                
+                                // Remover do array onlyInFile2
+                                onlyInFile2.splice(j, 1);
+                                foundDoubtfulMatch = true;
+                                break;
+                            }
                         }
                     }
                 }
                 
-                if (!foundMatch) {
+                if (!foundMatch && !foundDoubtfulMatch) {
                     onlyInFile1.push(item1);
                 }
             }
             
             return {
                 matches: matches,
+                doubtfulMatches: doubtfulMatches,
                 onlyInFile1: onlyInFile1,
                 onlyInFile2: onlyInFile2
             };
         }
 
-        function areNamesSimilar(name1, name2) {
+        function areValuesSimilar(value1, value2) {
             // Converter para minúsculas e remover acentos
             const normalize = (str) => {
                 return str.toLowerCase()
@@ -1024,10 +1079,10 @@
                     .trim();
             };
             
-            const n1 = normalize(name1);
-            const n2 = normalize(name2);
+            const n1 = normalize(value1);
+            const n2 = normalize(value2);
             
-            // Verificar se um nome contém o outro ou são iguais
+            // Verificar se um valor contém o outro ou são iguais
             return n1 === n2 || n1.includes(n2) || n2.includes(n1);
         }
 
@@ -1036,9 +1091,11 @@
             document.getElementById('only-in-file1-count').textContent = results.onlyInFile1.length;
             document.getElementById('only-in-file2-count').textContent = results.onlyInFile2.length;
             document.getElementById('matches-count').textContent = results.matches.length;
+            document.getElementById('doubtful-count').textContent = results.doubtfulMatches.length;
             
             // Limpar resultados anteriores
             commonResults.innerHTML = '';
+            doubtfulResults.innerHTML = '';
             differentResults.innerHTML = '';
             
             // Exibir correspondências
@@ -1047,15 +1104,35 @@
                 item.className = 'result-item';
                 
                 const details = `
-                    <div><strong>CNPJ:</strong> ${formatCnpj(match.item1.cnpj)}</div>
-                    <div><strong>Valor:</strong> R$ ${match.item1.valor.toFixed(2)}</div>
-                    ${match.item1.nome ? `<div><strong>Nome:</strong> ${match.item1.nome}</div>` : ''}
-                    ${match.item1.data ? `<div><strong>Data:</strong> ${match.item1.data}</div>` : ''}
-                    <div class="result-details">Correspondência exata entre os arquivos</div>
+                    <div><strong>Coluna 01:</strong> ${match.item1.coluna1}</div>
+                    <div><strong>Coluna 02:</strong> ${match.item1.coluna2.toFixed(2)}</div>
+                    ${match.item1.coluna3 ? `<div><strong>Coluna 03:</strong> ${match.item1.coluna3}</div>` : ''}
+                    ${match.item1.coluna4 ? `<div><strong>Coluna 04:</strong> ${match.item1.coluna4}</div>` : ''}
+                    <div class="result-details">Correspondência exata entre ${file1Name} e ${file2Name}</div>
                 `;
                 
                 item.innerHTML = details;
                 commonResults.appendChild(item);
+            });
+            
+            // Exibir correspondências duvidosas
+            results.doubtfulMatches.forEach(match => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                
+                const details = `
+                    <div><strong>Coluna 01:</strong> ${match.item1.coluna1}</div>
+                    <div><strong>Coluna 02 (${file1Name}):</strong> ${match.item1.coluna2.toFixed(2)}</div>
+                    <div><strong>Coluna 02 (${file2Name}):</strong> ${match.item2.coluna2.toFixed(2)}</div>
+                    <div><strong>Diferença:</strong> ${match.diff.toFixed(2)}</div>
+                    ${match.item1.coluna3 ? `<div><strong>Coluna 03 (${file1Name}):</strong> ${match.item1.coluna3}</div>` : ''}
+                    ${match.item2.coluna3 ? `<div><strong>Coluna 03 (${file2Name}):</strong> ${match.item2.coluna3}</div>` : ''}
+                    ${match.item1.coluna4 ? `<div><strong>Coluna 04:</strong> ${match.item1.coluna4}</div>` : ''}
+                    <div class="result-details">Correspondência duvidosa entre ${file1Name} e ${file2Name}</div>
+                `;
+                
+                item.innerHTML = details;
+                doubtfulResults.appendChild(item);
             });
             
             // Exibir itens apenas no arquivo 1
@@ -1064,11 +1141,11 @@
                 elem.className = 'result-item';
                 
                 const details = `
-                    <div><strong>CNPJ:</strong> ${formatCnpj(item.cnpj)}</div>
-                    <div><strong>Valor:</strong> R$ ${item.valor.toFixed(2)}</div>
-                    ${item.nome ? `<div><strong>Nome:</strong> ${item.nome}</div>` : ''}
-                    ${item.data ? `<div><strong>Data:</strong> ${item.data}</div>` : ''}
-                    <div class="result-details">Presente apenas no Arquivo 1</div>
+                    <div><strong>Coluna 01:</strong> ${item.coluna1}</div>
+                    <div><strong>Coluna 02:</strong> ${item.coluna2.toFixed(2)}</div>
+                    ${item.coluna3 ? `<div><strong>Coluna 03:</strong> ${item.coluna3}</div>` : ''}
+                    ${item.coluna4 ? `<div><strong>Coluna 04:</strong> ${item.coluna4}</div>` : ''}
+                    <div class="result-details">Presente apenas em ${file1Name}</div>
                 `;
                 
                 elem.innerHTML = details;
@@ -1081,11 +1158,11 @@
                 elem.className = 'result-item';
                 
                 const details = `
-                    <div><strong>CNPJ:</strong> ${formatCnpj(item.cnpj)}</div>
-                    <div><strong>Valor:</strong> R$ ${item.valor.toFixed(2)}</div>
-                    ${item.nome ? `<div><strong>Nome:</strong> ${item.nome}</div>` : ''}
-                    ${item.data ? `<div><strong>Data:</strong> ${item.data}</div>` : ''}
-                    <div class="result-details">Presente apenas no Arquivo 2</div>
+                    <div><strong>Coluna 01:</strong> ${item.coluna1}</div>
+                    <div><strong>Coluna 02:</strong> ${item.coluna2.toFixed(2)}</div>
+                    ${item.coluna3 ? `<div><strong>Coluna 03:</strong> ${item.coluna3}</div>` : ''}
+                    ${item.coluna4 ? `<div><strong>Coluna 04:</strong> ${item.coluna4}</div>` : ''}
+                    <div class="result-details">Presente apenas em ${file2Name}</div>
                 `;
                 
                 elem.innerHTML = details;
@@ -1093,41 +1170,40 @@
             });
             
             // Adicionar event listeners para os filtros
-            document.getElementById('filter-cnpj').addEventListener('input', filterResults);
-            document.getElementById('filter-nome').addEventListener('input', filterResults);
+            document.getElementById('filter-coluna1').addEventListener('input', filterResults);
+            document.getElementById('filter-coluna3').addEventListener('input', filterResults);
             document.getElementById('filter-status').addEventListener('change', filterResults);
         }
 
-        function formatCnpj(cnpj) {
-            // Formatar CNPJ se tiver 14 dígitos
-            if (cnpj.length === 14) {
-                return `${cnpj.substring(0, 2)}.${cnpj.substring(2, 5)}.${cnpj.substring(5, 8)}/${cnpj.substring(8, 12)}-${cnpj.substring(12)}`;
-            }
-            
-            // Formatar CPF se tiver 11 dígitos
-            if (cnpj.length === 11) {
-                return `${cnpj.substring(0, 3)}.${cnpj.substring(3, 6)}.${cnpj.substring(6, 9)}-${cnpj.substring(9)}`;
-            }
-            
-            // Retornar o valor original se não for CNPJ/CPF com tamanho esperado
-            return cnpj;
-        }
-
         function filterResults() {
-            const cnpjFilter = document.getElementById('filter-cnpj').value.toLowerCase();
-            const nomeFilter = document.getElementById('filter-nome').value.toLowerCase();
+            const coluna1Filter = document.getElementById('filter-coluna1').value.toLowerCase();
+            const coluna3Filter = document.getElementById('filter-coluna3').value.toLowerCase();
             const statusFilter = document.getElementById('filter-status').value;
             
             // Filtrar correspondências
             const commonItems = commonResults.querySelectorAll('.result-item');
             commonItems.forEach(item => {
-                const cnpj = item.querySelector('div:first-child').textContent.toLowerCase();
-                const nome = item.querySelector('div:nth-child(3)') ? item.querySelector('div:nth-child(3)').textContent.toLowerCase() : '';
+                const coluna1 = item.querySelector('div:first-child').textContent.toLowerCase();
+                const coluna3 = item.querySelector('div:nth-child(3)') ? item.querySelector('div:nth-child(3)').textContent.toLowerCase() : '';
                 const status = 'correspondentes';
                 
-                const show = (cnpj.includes(cnpjFilter) || cnpjFilter === '') &&
-                            (nome.includes(nomeFilter) || nomeFilter === '') &&
+                const show = (coluna1.includes(coluna1Filter) || coluna1Filter === '') &&
+                            (coluna3.includes(coluna3Filter) || coluna3Filter === '') &&
                             (statusFilter === 'todos' || statusFilter === 'correspondentes');
+                
+                item.style.display = show ? 'flex' : 'none';
+            });
+            
+            // Filtrar correspondências duvidosas
+            const doubtfulItems = doubtfulResults.querySelectorAll('.result-item');
+            doubtfulItems.forEach(item => {
+                const coluna1 = item.querySelector('div:first-child').textContent.toLowerCase();
+                const coluna3 = item.querySelector('div:nth-child(5)') ? item.querySelector('div:nth-child(5)').textContent.toLowerCase() : '';
+                const status = 'duvidosos';
+                
+                const show = (coluna1.includes(coluna1Filter) || coluna1Filter === '') &&
+                            (coluna3.includes(coluna3Filter) || coluna3Filter === '') &&
+                            (statusFilter === 'todos' || statusFilter === 'duvidosos');
                 
                 item.style.display = show ? 'flex' : 'none';
             });
@@ -1135,16 +1211,16 @@
             // Filtrar divergências
             const differentItems = differentResults.querySelectorAll('.result-item');
             differentItems.forEach(item => {
-                const cnpj = item.querySelector('div:first-child').textContent.toLowerCase();
-                const nome = item.querySelector('div:nth-child(3)') ? item.querySelector('div:nth-child(3)').textContent.toLowerCase() : '';
+                const coluna1 = item.querySelector('div:first-child').textContent.toLowerCase();
+                const coluna3 = item.querySelector('div:nth-child(3)') ? item.querySelector('div:nth-child(3)').textContent.toLowerCase() : '';
                 const statusText = item.querySelector('.result-details').textContent.toLowerCase();
                 let status = '';
                 
-                if (statusText.includes('arquivo 1')) status = 'apenas-arquivo1';
-                if (statusText.includes('arquivo 2')) status = 'apenas-arquivo2';
+                if (statusText.includes(file1Name.toLowerCase())) status = 'apenas-arquivo1';
+                if (statusText.includes(file2Name.toLowerCase())) status = 'apenas-arquivo2';
                 
-                const show = (cnpj.includes(cnpjFilter) || cnpjFilter === '') &&
-                            (nome.includes(nomeFilter) || nomeFilter === '') &&
+                const show = (coluna1.includes(coluna1Filter) || coluna1Filter === '') &&
+                            (coluna3.includes(coluna3Filter) || coluna3Filter === '') &&
                             (statusFilter === 'todos' || statusFilter === status);
                 
                 item.style.display = show ? 'flex' : 'none';
@@ -1157,61 +1233,89 @@
             
             // Adicionar aba de correspondências
             const matchesData = [
-                ['CNPJ', 'Valor Arquivo 1', 'Valor Arquivo 2', 'Diferença', 'Nome Arquivo 1', 'Nome Arquivo 2', 'Data Arquivo 1', 'Data Arquivo 2', 'Status']
+                ['Coluna 01', 'Coluna 02 Arquivo 1', 'Coluna 02 Arquivo 2', 'Diferença', 'Coluna 03 Arquivo 1', 'Coluna 03 Arquivo 2', 'Coluna 04 Arquivo 1', 'Coluna 04 Arquivo 2', 'Status', 'Origem Arquivo 1', 'Origem Arquivo 2']
             ];
             
             results.matches.forEach(match => {
                 matchesData.push([
-                    formatCnpj(match.item1.cnpj),
-                    match.item1.valor,
-                    match.item2.valor,
-                    match.valorDiff,
-                    match.item1.nome,
-                    match.item2.nome,
-                    match.item1.data,
-                    match.item2.data,
-                    'Correspondência'
+                    match.item1.coluna1,
+                    match.item1.coluna2,
+                    match.item2.coluna2,
+                    match.diff,
+                    match.item1.coluna3,
+                    match.item2.coluna3,
+                    match.item1.coluna4,
+                    match.item2.coluna4,
+                    'Correspondência',
+                    file1Name,
+                    file2Name
                 ]);
             });
             
             const matchesSheet = XLSX.utils.aoa_to_sheet(matchesData);
             XLSX.utils.book_append_sheet(wb, matchesSheet, 'Correspondências');
             
+            // Adicionar aba de correspondências duvidosas
+            const doubtfulData = [
+                ['Coluna 01', 'Coluna 02 Arquivo 1', 'Coluna 02 Arquivo 2', 'Diferença', 'Coluna 03 Arquivo 1', 'Coluna 03 Arquivo 2', 'Coluna 04 Arquivo 1', 'Coluna 04 Arquivo 2', 'Status', 'Origem Arquivo 1', 'Origem Arquivo 2']
+            ];
+            
+            results.doubtfulMatches.forEach(match => {
+                doubtfulData.push([
+                    match.item1.coluna1,
+                    match.item1.coluna2,
+                    match.item2.coluna2,
+                    match.diff,
+                    match.item1.coluna3,
+                    match.item2.coluna3,
+                    match.item1.coluna4,
+                    match.item2.coluna4,
+                    'Correspondência Duvidosa',
+                    file1Name,
+                    file2Name
+                ]);
+            });
+            
+            const doubtfulSheet = XLSX.utils.aoa_to_sheet(doubtfulData);
+            XLSX.utils.book_append_sheet(wb, doubtfulSheet, 'Correspondências Duvidosas');
+            
             // Adicionar aba de apenas no arquivo 1
             const onlyInFile1Data = [
-                ['CNPJ', 'Valor', 'Nome', 'Data', 'Status']
+                ['Coluna 01', 'Coluna 02', 'Coluna 03', 'Coluna 04', 'Status', 'Origem']
             ];
             
             results.onlyInFile1.forEach(item => {
                 onlyInFile1Data.push([
-                    formatCnpj(item.cnpj),
-                    item.valor,
-                    item.nome,
-                    item.data,
-                    'Apenas no Arquivo 1'
+                    item.coluna1,
+                    item.coluna2,
+                    item.coluna3,
+                    item.coluna4,
+                    'Apenas no Arquivo 1',
+                    file1Name
                 ]);
             });
             
             const onlyInFile1Sheet = XLSX.utils.aoa_to_sheet(onlyInFile1Data);
-            XLSX.utils.book_append_sheet(wb, onlyInFile1Sheet, 'Apenas no Arquivo 1');
+            XLSX.utils.book_append_sheet(wb, onlyInFile1Sheet, `Apenas em ${file1Name.substring(0, 30)}`);
             
             // Adicionar aba de apenas no arquivo 2
             const onlyInFile2Data = [
-                ['CNPJ', 'Valor', 'Nome', 'Data', 'Status']
+                ['Coluna 01', 'Coluna 02', 'Coluna 03', 'Coluna 04', 'Status', 'Origem']
             ];
             
             results.onlyInFile2.forEach(item => {
                 onlyInFile2Data.push([
-                    formatCnpj(item.cnpj),
-                    item.valor,
-                    item.nome,
-                    item.data,
-                    'Apenas no Arquivo 2'
+                    item.coluna1,
+                    item.coluna2,
+                    item.coluna3,
+                    item.coluna4,
+                    'Apenas no Arquivo 2',
+                    file2Name
                 ]);
             });
             
             const onlyInFile2Sheet = XLSX.utils.aoa_to_sheet(onlyInFile2Data);
-            XLSX.utils.book_append_sheet(wb, onlyInFile2Sheet, 'Apenas no Arquivo 2');
+            XLSX.utils.book_append_sheet(wb, onlyInFile2Sheet, `Apenas em ${file2Name.substring(0, 30)}`);
             
             // Gerar arquivo e fazer download
             XLSX.writeFile(wb, 'relatorio_analise.xlsx');
@@ -1228,18 +1332,19 @@
                 let debugContent = '';
                 
                 if (file1Data) {
-                    debugContent += `Arquivo 1: ${file1Data.length - 1} linhas de dados\n`;
+                    debugContent += `Arquivo 1 (${file1Name}): ${file1Data.length - 1} linhas de dados\n`;
                     debugContent += `Colunas: ${file1Columns.join(', ')}\n\n`;
                 }
                 
                 if (file2Data) {
-                    debugContent += `Arquivo 2: ${file2Data.length - 1} linhas de dados\n`;
+                    debugContent += `Arquivo 2 (${file2Name}): ${file2Data.length - 1} linhas de dados\n`;
                     debugContent += `Colunas: ${file2Columns.join(', ')}\n\n`;
                 }
                 
                 if (results) {
                     debugContent += `Resultados:\n`;
                     debugContent += `- Correspondências: ${results.matches.length}\n`;
+                    debugContent += `- Correspondências Duvidosas: ${results.doubtfulMatches.length}\n`;
                     debugContent += `- Apenas no Arquivo 1: ${results.onlyInFile1.length}\n`;
                     debugContent += `- Apenas no Arquivo 2: ${results.onlyInFile2.length}\n`;
                 }
