@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisador de Pagamentos - Versão Melhorada</title>
+    <title>AnalisadorExcel - Versão Melhorada</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -460,7 +460,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Analisador de Pagamentos - Versão Melhorada</h1>
+            <h1>AnalisadorExcel - Versão Melhorada</h1>
             <p class="description">Faça upload de dois arquivos Excel com dados de pagamentos para identificar correspondências mesmo com diferenças de formatação (CNPJ, nomes, etc.) e gere um relatório detalhado.</p>
         </header>
 
@@ -497,27 +497,27 @@
             <div class="config-content active" id="file1-config">
                 <div class="config-options">
                     <div class="config-group">
-                        <label for="file1-cnpj-column">Coluna CNPJ/CPF:</label>
+                        <label for="file1-cnpj-column">Coluna de Comparação 01 (CNPJ/CPF):</label>
                         <select id="file1-cnpj-column">
                             <option value="">Selecionar coluna</option>
                         </select>
                         <div id="file1-cnpj-error" class="config-error">Selecione uma coluna para CNPJ/CPF</div>
                     </div>
                     <div class="config-group">
-                        <label for="file1-valor-column">Coluna Valor:</label>
+                        <label for="file1-valor-column">Coluna de Comparação 02 (Valor):</label>
                         <select id="file1-valor-column">
                             <option value="">Selecionar coluna</option>
                         </select>
                         <div id="file1-valor-error" class="config-error">Selecione uma coluna para Valor</div>
                     </div>
                     <div class="config-group">
-                        <label for="file1-nome-column">Coluna Nome:</label>
+                        <label for="file1-nome-column">Coluna de Comparação 03 (Nome):</label>
                         <select id="file1-nome-column">
                             <option value="">Selecionar coluna</option>
                         </select>
                     </div>
                     <div class="config-group">
-                        <label for="file1-data-column">Coluna Data:</label>
+                        <label for="file1-data-column">Coluna de Comparação 04 (Data):</label>
                         <select id="file1-data-column">
                             <option value="">Selecionar coluna</option>
                         </select>
@@ -528,27 +528,27 @@
             <div class="config-content" id="file2-config">
                 <div class="config-options">
                     <div class="config-group">
-                        <label for="file2-cnpj-column">Coluna CNPJ/CPF:</label>
+                        <label for="file2-cnpj-column">Coluna de Comparação 01 (CNPJ/CPF):</label>
                         <select id="file2-cnpj-column">
                             <option value="">Selecionar coluna</option>
                         </select>
                         <div id="file2-cnpj-error" class="config-error">Selecione uma coluna para CNPJ/CPF</div>
                     </div>
                     <div class="config-group">
-                        <label for="file2-valor-column">Coluna Valor:</label>
+                        <label for="file2-valor-column">Coluna de Comparação 02 (Valor):</label>
                         <select id="file2-valor-column">
                             <option value="">Selecionar coluna</option>
                         </select>
                         <div id="file2-valor-error" class="config-error">Selecione uma coluna para Valor</div>
                     </div>
                     <div class="config-group">
-                        <label for="file2-nome-column">Coluna Nome:</label>
+                        <label for="file2-nome-column">Coluna de Comparação 03 (Nome):</label>
                         <select id="file2-nome-column">
                             <option value="">Selecionar coluna</option>
                         </select>
                     </div>
                     <div class="config-group">
-                        <label for="file2-data-column">Coluna Data:</label>
+                        <label for="file2-data-column">Coluna de Comparação 04 (Data):</label>
                         <select id="file2-data-column">
                             <option value="">Selecionar coluna</option>
                         </select>
@@ -570,1053 +570,686 @@
                         </select>
                     </div>
                     <div class="config-group">
-                        <label for="comparar-nomes">Comparar nomes (ignorar maiúsculas/minúsculas):</label>
+                        <label for="comparar-nomes">Comparar nomes (similaridade):</label>
                         <select id="comparar-nomes">
                             <option value="sim" selected>Sim</option>
                             <option value="nao">Não</option>
                         </select>
                     </div>
-                    <div class="config-group">
-                        <label for="linha-cabecalho">Linha do cabeçalho:</label>
-                        <input type="number" id="linha-cabecalho" value="1" min="1">
-                    </div>
-                    <div class="config-group">
-                        <label for="criteria">Critérios para matching:</label>
-                        <select id="criteria" multiple>
-                            <option value="cnpj" selected>CNPJ/CPF</option>
-                            <option value="valor" selected>Valor</option>
-                            <option value="nome">Nome</option>
-                            <option value="data">Data</option>
-                        </select>
-                    </div>
                 </div>
             </div>
         </div>
 
+        <button id="analyze-btn" class="analyze-btn" disabled>Analisar Arquivos</button>
+
         <div class="loading">
             <div class="spinner"></div>
-            <p>Analisando arquivos...</p>
+            <p>Processando arquivos...</p>
             <div class="progress-container">
                 <div class="progress-bar" id="progress-bar"></div>
             </div>
-            <p id="progress-text">0% concluído</p>
         </div>
-
-        <button id="analyze-btn" class="analyze-btn" disabled>Analisar Pagamentos</button>
 
         <div id="results-section" class="results-section">
             <h2>Resultados da Análise</h2>
             
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="filter-cnpj">Filtrar por CNPJ/CPF:</label>
-                    <input type="text" id="filter-cnpj" placeholder="Digite para filtrar...">
-                </div>
-                <div class="filter-group">
-                    <label for="filter-nome">Filtrar por Nome:</label>
-                    <input type="text" id="filter-nome" placeholder="Digite para filtrar...">
-                </div>
-                <div class="filter-group">
-                    <label for="filter-type">Filtrar por Tipo:</label>
-                    <select id="filter-type">
-                        <option value="all">Todos</option>
-                        <option value="matches">Apenas Correspondências</option>
-                        <option value="only-file1">Apenas no Arquivo 1</option>
-                        <option value="only-file2">Apenas no Arquivo 2</option>
-                    </select>
-                </div>
-            </div>
-            
             <div class="summary">
-                <div class="summary-item matches">
-                    <div class="summary-number" id="match-count">0</div>
-                    <div class="summary-label">Pagamentos Correspondentes</div>
-                </div>
                 <div class="summary-item only-in-file1">
-                    <div class="summary-number" id="only-file1-count">0</div>
+                    <div class="summary-number" id="only-in-file1-count">0</div>
                     <div class="summary-label">Apenas no Arquivo 1</div>
                 </div>
                 <div class="summary-item only-in-file2">
-                    <div class="summary-number" id="only-file2-count">0</div>
+                    <div class="summary-number" id="only-in-file2-count">0</div>
                     <div class="summary-label">Apenas no Arquivo 2</div>
+                </div>
+                <div class="summary-item matches">
+                    <div class="summary-number" id="matches-count">0</div>
+                    <div class="summary-label">Correspondências</div>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filter-cnpj">Filtrar por CNPJ:</label>
+                    <input type="text" id="filter-cnpj" placeholder="Digite o CNPJ...">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-nome">Filtrar por Nome:</label>
+                    <input type="text" id="filter-nome" placeholder="Digite o nome...">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-status">Filtrar por Status:</label>
+                    <select id="filter-status">
+                        <option value="todos">Todos</option>
+                        <option value="apenas-arquivo1">Apenas no Arquivo 1</option>
+                        <option value="apenas-arquivo2">Apenas no Arquivo 2</option>
+                        <option value="correspondentes">Correspondentes</option>
+                    </select>
                 </div>
             </div>
             
             <div class="results-container">
                 <div class="common">
-                    <h3>Pagamentos Correspondentes</h3>
+                    <h3>Correspondências Encontradas</h3>
                     <div id="common-results"></div>
                 </div>
-                
                 <div class="different">
-                    <h3>Pagamentos Não Correspondentes</h3>
+                    <h3>Divergências</h3>
                     <div id="different-results"></div>
                 </div>
             </div>
-
-            <button id="download-btn" class="download-btn">Baixar Relatório em Excel</button>
             
-            <div class="debug-toggle" id="debug-toggle">Mostrar informações de debug</div>
+            <button id="download-btn" class="download-btn">Baixar Relatório Completo</button>
+            
+            <div class="debug-toggle" id="debug-toggle">Mostrar informações de depuração</div>
             <div class="debug-info" id="debug-info"></div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const file1Input = document.getElementById('file1');
-            const file2Input = document.getElementById('file2');
-            const file1Name = document.getElementById('file1-name');
-            const file2Name = document.getElementById('file2-name');
-            const file1Error = document.getElementById('file1-error');
-            const file2Error = document.getElementById('file2-error');
-            const analyzeBtn = document.getElementById('analyze-btn');
-            const downloadBtn = document.getElementById('download-btn');
-            const resultsSection = document.getElementById('results-section');
-            const commonResults = document.getElementById('common-results');
-            const differentResults = document.getElementById('different-results');
-            const loading = document.querySelector('.loading');
-            const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
-            const matchCount = document.getElementById('match-count');
-            const onlyFile1Count = document.getElementById('only-file1-count');
-            const onlyFile2Count = document.getElementById('only-file2-count');
-            const configTabs = document.querySelectorAll('.config-tab');
-            const errorMessage = document.getElementById('error-message');
-            const successMessage = document.getElementById('success-message');
-            const debugToggle = document.getElementById('debug-toggle');
-            const debugInfo = document.getElementById('debug-info');
-            
-            // Elementos de filtro
-            const filterCnpj = document.getElementById('filter-cnpj');
-            const filterNome = document.getElementById('filter-nome');
-            const filterType = document.getElementById('filter-type');
-            
-            // Configurações por arquivo
-            const file1CnpjColumn = document.getElementById('file1-cnpj-column');
-            const file1ValorColumn = document.getElementById('file1-valor-column');
-            const file1NomeColumn = document.getElementById('file1-nome-column');
-            const file1DataColumn = document.getElementById('file1-data-column');
-            const file1CnpjError = document.getElementById('file1-cnpj-error');
-            const file1ValorError = document.getElementById('file1-valor-error');
-            
-            const file2CnpjColumn = document.getElementById('file2-cnpj-column');
-            const file2ValorColumn = document.getElementById('file2-valor-column');
-            const file2NomeColumn = document.getElementById('file2-nome-column');
-            const file2DataColumn = document.getElementById('file2-data-column');
-            const file2CnpjError = document.getElementById('file2-cnpj-error');
-            const file2ValorError = document.getElementById('file2-valor-error');
-            
-            // Configurações globais
-            const toleranciaInput = document.getElementById('tolerancia');
-            const ignorarCaracteres = document.getElementById('ignorar-caracteres');
-            const compararNomes = document.getElementById('comparar-nomes');
-            const linhaCabecalho = document.getElementById('linha-cabecalho');
-            const criteriaSelect = document.getElementById('criteria');
-            
-            let file1Data = null;
-            let file2Data = null;
-            let file1Headers = [];
-            let file2Headers = [];
-            let analysisResults = null;
-            let filteredResults = null;
-            let debugData = [];
+        // Variáveis globais
+        let file1Data = null;
+        let file2Data = null;
+        let file1Columns = [];
+        let file2Columns = [];
+        let results = null;
 
-            // Toggle para informações de debug
-            debugToggle.addEventListener('click', function() {
-                if (debugInfo.style.display === 'none') {
-                    debugInfo.style.display = 'block';
-                    debugToggle.textContent = 'Ocultar informações de debug';
-                } else {
-                    debugInfo.style.display = 'none';
-                    debugToggle.textContent = 'Mostrar informações de debug';
-                }
-            });
+        // Elementos DOM
+        const file1Input = document.getElementById('file1');
+        const file2Input = document.getElementById('file2');
+        const file1Name = document.getElementById('file1-name');
+        const file2Name = document.getElementById('file2-name');
+        const file1Error = document.getElementById('file1-error');
+        const file2Error = document.getElementById('file2-error');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const loadingSection = document.querySelector('.loading');
+        const resultsSection = document.getElementById('results-section');
+        const commonResults = document.getElementById('common-results');
+        const differentResults = document.getElementById('different-results');
+        const downloadBtn = document.getElementById('download-btn');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const debugToggle = document.getElementById('debug-toggle');
+        const debugInfo = document.getElementById('debug-info');
+        const progressBar = document.getElementById('progress-bar');
+        const configTabs = document.querySelectorAll('.config-tab');
 
-            // Configuração das abas
-            configTabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabId = tab.getAttribute('data-tab');
-                    
-                    // Remove a classe active de todas as abas e conteúdos
-                    document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.config-content').forEach(c => c.classList.remove('active'));
-                    
-                    // Adiciona a classe active à aba e conteúdo clicados
-                    tab.classList.add('active');
-                    document.getElementById(`${tabId}-config`).classList.add('active');
-                });
-            });
-
-            // Event listeners para os inputs de arquivo
-            file1Input.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    // Validar tipo de arquivo
-                    if (!file.name.match(/\.(xlsx|xls)$/i)) {
-                        showError(file1Error, 'Por favor, selecione um arquivo Excel (.xlsx ou .xls)');
-                        return;
-                    }
-                    
-                    // Validar tamanho do arquivo (máximo 10MB)
-                    if (file.size > 10 * 1024 * 1024) {
-                        showError(file1Error, 'O arquivo é muito grande. Tamanho máximo: 10MB');
-                        return;
-                    }
-                    
-                    clearError(file1Error);
-                    file1Name.textContent = file.name;
-                    readFile(file, 1);
-                }
-            });
-
-            file2Input.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    // Validar tipo de arquivo
-                    if (!file.name.match(/\.(xlsx|xls)$/i)) {
-                        showError(file2Error, 'Por favor, selecione um arquivo Excel (.xlsx ou .xls)');
-                        return;
-                    }
-                    
-                    // Validar tamanho do arquivo (máximo 10MB)
-                    if (file.size > 10 * 1024 * 1024) {
-                        showError(file2Error, 'O arquivo é muito grande. Tamanho máximo: 10MB');
-                        return;
-                    }
-                    
-                    clearError(file2Error);
-                    file2Name.textContent = file.name;
-                    readFile(file, 2);
-                }
-            });
-
-            // Event listeners para filtros
-            filterCnpj.addEventListener('input', applyFilters);
-            filterNome.addEventListener('input', applyFilters);
-            filterType.addEventListener('change', applyFilters);
-
-            // Função para mostrar mensagem de erro
-            function showError(element, message) {
-                element.textContent = message;
-                element.style.display = 'block';
-            }
-
-            // Função para limpar mensagem de erro
-            function clearError(element) {
-                element.textContent = '';
-                element.style.display = 'none';
-            }
-
-            // Função para mostrar mensagem global de erro
-            function showGlobalError(message) {
-                errorMessage.textContent = message;
-                errorMessage.style.display = 'block';
-                setTimeout(() => {
-                    errorMessage.style.display = 'none';
-                }, 5000);
-            }
-
-            // Função para mostrar mensagem global de sucesso
-            function showGlobalSuccess(message) {
-                successMessage.textContent = message;
-                successMessage.style.display = 'block';
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 3000);
-            }
-
-            // Função para adicionar informações de debug
-            function addDebugInfo(message) {
-                debugData.push(message);
-                debugInfo.innerHTML = debugData.join('<br>');
-            }
-
-            // Função para ler arquivos Excel
-            function readFile(file, fileNumber) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        
-                        // Verificar se a planilha tem dados
-                        if (workbook.SheetNames.length === 0) {
-                            throw new Error('O arquivo não contém planilhas.');
-                        }
-                        
-                        // Assume que estamos lendo a primeira planilha
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-                        
-                        // Verificar se a planilha tem dados suficientes
-                        if (jsonData.length < 2) {
-                            throw new Error('O arquivo não contém dados suficientes.');
-                        }
-                        
-                        if (fileNumber === 1) {
-                            file1Data = jsonData;
-                            file1Headers = jsonData.length > 0 ? jsonData[0] : [];
-                            updateColumnDropdowns(file1Headers, 'file1');
-                        } else {
-                            file2Data = jsonData;
-                            file2Headers = jsonData.length > 0 ? jsonData[0] : [];
-                            updateColumnDropdowns(file2Headers, 'file2');
-                        }
-                        
-                        // Habilita o botão de análise se ambos os arquivos foram carregados
-                        if (file1Data && file2Data) {
-                            validateConfiguration();
-                        }
-                        
-                        showGlobalSuccess(`Arquivo ${fileNumber} carregado com sucesso!`);
-                    } catch (error) {
-                        const errorElement = fileNumber === 1 ? file1Error : file2Error;
-                        showError(errorElement, `Erro ao ler o arquivo: ${error.message}`);
-                        
-                        if (fileNumber === 1) {
-                            file1Data = null;
-                        } else {
-                            file2Data = null;
-                        }
-                        analyzeBtn.disabled = true;
-                    }
-                };
-                
-                reader.onerror = function() {
-                    const errorElement = fileNumber === 1 ? file1Error : file2Error;
-                    showError(errorElement, 'Erro ao ler o arquivo. Tente novamente.');
-                    
-                    if (fileNumber === 1) {
-                        file1Data = null;
-                    } else {
-                        file2Data = null;
-                    }
-                    analyzeBtn.disabled = true;
-                };
-                
-                reader.readAsArrayBuffer(file);
-            }
-
-            // Validar configuração antes de habilitar o botão de análise
-            function validateConfiguration() {
-                let isValid = true;
-                
-                // Validar colunas do arquivo 1
-                if (!file1CnpjColumn.value) {
-                    showError(file1CnpjError, 'Selecione uma coluna para CNPJ/CPF');
-                    isValid = false;
-                } else {
-                    clearError(file1CnpjError);
-                }
-                
-                if (!file1ValorColumn.value) {
-                    showError(file1ValorError, 'Selecione uma coluna para Valor');
-                    isValid = false;
-                } else {
-                    clearError(file1ValorError);
-                }
-                
-                // Validar colunas do arquivo 2
-                if (!file2CnpjColumn.value) {
-                    showError(file2CnpjError, 'Selecione uma coluna para CNPJ/CPF');
-                    isValid = false;
-                } else {
-                    clearError(file2CnpjError);
-                }
-                
-                if (!file2ValorColumn.value) {
-                    showError(file2ValorError, 'Selecione uma coluna para Valor');
-                    isValid = false;
-                } else {
-                    clearError(file2ValorError);
-                }
-                
-                analyzeBtn.disabled = !isValid;
-                return isValid;
-            }
-
-            // Atualiza os dropdowns de colunas para cada arquivo
-            function updateColumnDropdowns(headers, filePrefix) {
-                const cnpjSelect = document.getElementById(`${filePrefix}-cnpj-column`);
-                const valorSelect = document.getElementById(`${filePrefix}-valor-column`);
-                const nomeSelect = document.getElementById(`${filePrefix}-nome-column`);
-                const dataSelect = document.getElementById(`${filePrefix}-data-column`);
-                
-                // Limpa os dropdowns
-                cnpjSelect.innerHTML = '<option value="">Selecionar coluna</option>';
-                valorSelect.innerHTML = '<option value="">Selecionar coluna</option>';
-                nomeSelect.innerHTML = '<option value="">Selecionar coluna</option>';
-                dataSelect.innerHTML = '<option value="">Selecionar coluna</option>';
-                
-                // Preenche os dropdowns com os cabeçalhos
-                headers.forEach((header, index) => {
-                    if (header) {
-                        cnpjSelect.innerHTML += `<option value="${index}">${header}</option>`;
-                        valorSelect.innerHTML += `<option value="${index}">${header}</option>`;
-                        nomeSelect.innerHTML += `<option value="${index}">${header}</option>`;
-                        dataSelect.innerHTML += `<option value="${index}">${header}</option>`;
-                    }
-                });
-                
-                // Tenta prever automaticamente as colunas
-                headers.forEach((header, index) => {
-                    const headerLower = header.toLowerCase();
-                    if (headerLower.includes('cnpj') || headerLower.includes('cpf') || headerLower.includes('documento')) {
-                        cnpjSelect.value = index;
-                    } else if (headerLower.includes('valor') || headerLower.includes('preço') || headerLower.includes('total')) {
-                        valorSelect.value = index;
-                    } else if (headerLower.includes('nome') || headerLower.includes('razão') || headerLower.includes('fornecedor')) {
-                        nomeSelect.value = index;
-                    } else if (headerLower.includes('data') || headerLower.includes('date')) {
-                        dataSelect.value = index;
-                    }
-                });
-                
-                // Valida a configuração após atualizar os dropdowns
-                if (file1Data && file2Data) {
-                    validateConfiguration();
-                }
-            }
-
-            // Event listener para o botão de análise
-            analyzeBtn.addEventListener('click', function() {
-                if (!file1Data || !file2Data) {
-                    showGlobalError('Por favor, selecione ambos os arquivos antes de analisar.');
-                    return;
-                }
-                
-                if (!validateConfiguration()) {
-                    showGlobalError('Por favor, configure corretamente as colunas antes de analisar.');
-                    return;
-                }
-                
-                // Limpar dados de debug anteriores
-                debugData = [];
-                debugInfo.innerHTML = '';
-                
-                loading.style.display = 'block';
-                analyzeBtn.disabled = true;
-                
-                // Usamos setTimeout para permitir que a animação de loading seja exibida
-                setTimeout(function() {
-                    analyzeFiles();
-                    loading.style.display = 'none';
-                    analyzeBtn.disabled = false;
-                }, 500);
-            });
-
-            // Normaliza CNPJ/CPF (remove caracteres não numéricos)
-            function normalizeCnpj(cnpj) {
-                if (!cnpj) return '';
-                return cnpj.toString().replace(/\D/g, '');
-            }
-
-            // Normaliza nome (remove espaços extras e converte para minúsculas)
-            function normalizeNome(nome) {
-                if (!nome) return '';
-                return nome.toString().toLowerCase().replace(/\s+/g, ' ').trim();
-            }
-
-            // Normaliza data para formato consistente
-            function normalizeData(data) {
-                if (!data) return '';
-                
-                // Se for um objeto Date, formata para string
-                if (data instanceof Date) {
-                    return data.toISOString().split('T')[0];
-                }
-                
-                // Tenta converter para data
-                const date = new Date(data);
-                if (!isNaN(date.getTime())) {
-                    return date.toISOString().split('T')[0];
-                }
-                
-                // Se não for uma data válida, retorna a string original
-                return data.toString();
-            }
-
-            // Normaliza valor para formato numérico
-            function normalizeValor(valor) {
-                if (typeof valor === 'number') return valor;
-                
-                // Remove caracteres não numéricos, exceto ponto e vírgula
-                const numStr = valor.toString().replace(/[^\d,.-]/g, '');
-                
-                // Substitui vírgula por ponto para parseFloat
-                const normalized = numStr.replace(',', '.');
-                
-                return parseFloat(normalized) || 0;
-            }
-
-            // Atualiza a barra de progresso
-            function updateProgress(percent, message) {
-                progressBar.style.width = `${percent}%`;
-                progressText.textContent = message || `${percent}% concluído`;
-            }
-
-            // Função para analisar os arquivos
-            function analyzeFiles() {
-                const cnpjCol1 = parseInt(file1CnpjColumn.value);
-                const valorCol1 = parseInt(file1ValorColumn.value);
-                const nomeCol1 = file1NomeColumn.value ? parseInt(file1NomeColumn.value) : -1;
-                const dataCol1 = file1DataColumn.value ? parseInt(file1DataColumn.value) : -1;
-                
-                const cnpjCol2 = parseInt(file2CnpjColumn.value);
-                const valorCol2 = parseInt(file2ValorColumn.value);
-                const nomeCol2 = file2NomeColumn.value ? parseInt(file2NomeColumn.value) : -1;
-                const dataCol2 = file2DataColumn.value ? parseInt(file2DataColumn.value) : -1;
-                
-                const tolerancia = parseFloat(toleranciaInput.value) || 0.01;
-                const ignoreChars = ignorarCaracteres.value === 'sim';
-                const compareNames = compararNomes.value === 'sim';
-                const headerRow = parseInt(linhaCabecalho.value) || 1;
-                
-                // Obter critérios selecionados
-                const selectedCriteria = [];
-                for (let option of criteriaSelect.options) {
-                    if (option.selected) {
-                        selectedCriteria.push(option.value);
-                    }
-                }
-                
-                addDebugInfo(`Critérios selecionados: ${selectedCriteria.join(', ')}`);
-                addDebugInfo(`Tolerância: ${tolerancia}`);
-                addDebugInfo(`Ignorar caracteres: ${ignoreChars}`);
-                addDebugInfo(`Comparar nomes: ${compareNames}`);
-                
-                // Pula as linhas de cabeçalho
-                const data1 = file1Data.slice(headerRow);
-                const data2 = file2Data.slice(headerRow);
-                
-                addDebugInfo(`Arquivo 1: ${data1.length} linhas de dados`);
-                addDebugInfo(`Arquivo 2: ${data2.length} linhas de dados`);
-                
-                // Conjuntos para armazenar os resultados
-                const matches = [];
-                const onlyInFile1 = [];
-                const onlyInFile2 = [];
-                
-                // Mapa para verificação rápida dos pagamentos no arquivo 2
-                const file2Map = new Map();
-                
-                updateProgress(10, 'Processando Arquivo 2...');
-                
-                // Preprocessa o arquivo 2
-                data2.forEach((row, index) => {
-                    if (row.length > Math.max(cnpjCol2, valorCol2, nomeCol2, dataCol2)) {
-                        const cnpj = ignoreChars ? normalizeCnpj(row[cnpjCol2]) : row[cnpjCol2]?.toString() || '';
-                        const valor = normalizeValor(row[valorCol2]);
-                        const nome = nomeCol2 >= 0 && row[nomeCol2] ? (compareNames ? normalizeNome(row[nomeCol2]) : row[nomeCol2]) : '';
-                        const data = dataCol2 >= 0 && row[dataCol2] ? normalizeData(row[dataCol2]) : '';
-                        
-                        if (cnpj && !isNaN(valor)) {
-                            // Cria uma chave única para este registro
-                            const key = `${cnpj}_${valor.toFixed(2)}`;
-                            file2Map.set(key, { row, index: index + headerRow + 1, cnpj, valor, nome, data });
-                        }
-                    }
-                });
-                
-                addDebugInfo(`Arquivo 2 mapeado: ${file2Map.size} registros válidos`);
-                
-                updateProgress(40, 'Processando Arquivo 1...');
-                
-                // Verifica correspondências no arquivo 1
-                const matchedInFile2 = new Set();
-                const totalRows = data1.length;
-                
-                data1.forEach((row, index) => {
-                    if (row.length > Math.max(cnpjCol1, valorCol1, nomeCol1, dataCol1)) {
-                        const cnpj = ignoreChars ? normalizeCnpj(row[cnpjCol1]) : row[cnpjCol1]?.toString() || '';
-                        const valor = normalizeValor(row[valorCol1]);
-                        const nome = nomeCol1 >= 0 && row[nomeCol1] ? (compareNames ? normalizeNome(row[nomeCol1]) : row[nomeCol1]) : '';
-                        const data = dataCol1 >= 0 && row[dataCol1] ? normalizeData(row[dataCol1]) : '';
-                        
-                        if (cnpj && !isNaN(valor)) {
-                            // Cria uma chave única para este registro
-                            const key = `${cnpj}_${valor.toFixed(2)}`;
-                            const match = file2Map.get(key);
-                            
-                            if (match) {
-                                // Verifica critérios adicionais se necessário
-                                let criteriaMatch = true;
-                                
-                                if (selectedCriteria.includes('nome') && nome && match.nome) {
-                                    if (compareNames) {
-                                        criteriaMatch = criteriaMatch && normalizeNome(nome) === normalizeNome(match.nome);
-                                    } else {
-                                        criteriaMatch = criteriaMatch && nome === match.nome;
-                                    }
-                                    
-                                    if (!criteriaMatch) {
-                                        addDebugInfo(`Nome não corresponde: ${nome} vs ${match.nome}`);
-                                    }
-                                }
-                                
-                                if (selectedCriteria.includes('data') && data && match.data) {
-                                    criteriaMatch = criteriaMatch && normalizeData(data) === normalizeData(match.data);
-                                    
-                                    if (!criteriaMatch) {
-                                        addDebugInfo(`Data não corresponde: ${data} vs ${match.data}`);
-                                    }
-                                }
-                                
-                                if (criteriaMatch) {
-                                    // Correspondência exata encontrada
-                                    matches.push({
-                                        cnpj: cnpj,
-                                        valor: valor,
-                                        nome: nome,
-                                        data: data,
-                                        file1Row: row,
-                                        file2Row: match.row,
-                                        file1Index: index + headerRow + 1,
-                                        file2Index: match.index,
-                                        type: 'exact'
-                                    });
-                                    matchedInFile2.add(key);
-                                } else {
-                                    // Procura por correspondências com tolerância de valor
-                                    let found = false;
-                                    for (let [otherKey, value] of file2Map.entries()) {
-                                        const parts = otherKey.split('_');
-                                        const otherCnpj = parts[0];
-                                        const otherValor = parseFloat(parts[1]);
-                                        
-                                        // Verifica se o CNPJ corresponde e se o valor está dentro da tolerância
-                                        if (cnpj === otherCnpj && Math.abs(valor - otherValor) <= tolerancia) {
-                                            // Verifica critérios adicionais
-                                            let toleranceMatch = true;
-                                            
-                                            if (selectedCriteria.includes('nome') && nome && value.nome) {
-                                                if (compareNames) {
-                                                    toleranceMatch = toleranceMatch && normalizeNome(nome) === normalizeNome(value.nome);
-                                                } else {
-                                                    toleranceMatch = toleranceMatch && nome === value.nome;
-                                                }
-                                            }
-                                            
-                                            if (selectedCriteria.includes('data') && data && value.data) {
-                                                toleranceMatch = toleranceMatch && normalizeData(data) === normalizeData(value.data);
-                                            }
-                                            
-                                            if (toleranceMatch) {
-                                                matches.push({
-                                                    cnpj: cnpj,
-                                                    valor: valor,
-                                                    nome: nome,
-                                                    data: data,
-                                                    file1Row: row,
-                                                    file2Row: value.row,
-                                                    file1Index: index + headerRow + 1,
-                                                    file2Index: value.index,
-                                                    tolerancia: Math.abs(valor - otherValor),
-                                                    type: 'tolerance'
-                                                });
-                                                matchedInFile2.add(otherKey);
-                                                found = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    
-                                    if (!found) {
-                                        onlyInFile1.push({
-                                            cnpj: cnpj,
-                                            valor: valor,
-                                            nome: nome,
-                                            data: data,
-                                            row: row,
-                                            index: index + headerRow + 1
-                                        });
-                                    }
-                                }
-                            } else {
-                                // Procura por correspondências com tolerância de valor
-                                let found = false;
-                                for (let [otherKey, value] of file2Map.entries()) {
-                                    const parts = otherKey.split('_');
-                                    const otherCnpj = parts[0];
-                                    const otherValor = parseFloat(parts[1]);
-                                    
-                                    // Verifica se o CNPJ corresponde e se o valor está dentro da tolerância
-                                    if (cnpj === otherCnpj && Math.abs(valor - otherValor) <= tolerancia) {
-                                        // Verifica critérios adicionais
-                                        let toleranceMatch = true;
-                                        
-                                        if (selectedCriteria.includes('nome') && nome && value.nome) {
-                                            if (compareNames) {
-                                                toleranceMatch = toleranceMatch && normalizeNome(nome) === normalizeNome(value.nome);
-                                            } else {
-                                                toleranceMatch = toleranceMatch && nome === value.nome;
-                                            }
-                                        }
-                                        
-                                        if (selectedCriteria.includes('data') && data && value.data) {
-                                            toleranceMatch = toleranceMatch && normalizeData(data) === normalizeData(value.data);
-                                        }
-                                        
-                                        if (toleranceMatch) {
-                                            matches.push({
-                                                cnpj: cnpj,
-                                                valor: valor,
-                                                nome: nome,
-                                                data: data,
-                                                file1Row: row,
-                                                file2Row: value.row,
-                                                file1Index: index + headerRow + 1,
-                                                file2Index: value.index,
-                                                tolerancia: Math.abs(valor - otherValor),
-                                                type: 'tolerance'
-                                            });
-                                            matchedInFile2.add(otherKey);
-                                            found = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                                
-                                if (!found) {
-                                    onlyInFile1.push({
-                                        cnpj: cnpj,
-                                        valor: valor,
-                                        nome: nome,
-                                        data: data,
-                                        row: row,
-                                        index: index + headerRow + 1
-                                    });
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Atualiza o progresso
-                    if (index % 10 === 0) {
-                        const progress = 40 + Math.floor((index / totalRows) * 50);
-                        updateProgress(progress);
-                    }
-                });
-                
-                updateProgress(90, 'Buscando diferenças no Arquivo 2...');
-                
-                // Encontra pagamentos apenas no arquivo 2
-                data2.forEach((row, index) => {
-                    if (row.length > Math.max(cnpjCol2, valorCol2, nomeCol2, dataCol2)) {
-                        const cnpj = ignoreChars ? normalizeCnpj(row[cnpjCol2]) : row[cnpjCol2]?.toString() || '';
-                        const valor = normalizeValor(row[valorCol2]);
-                        const nome = nomeCol2 >= 0 && row[nomeCol2] ? (compareNames ? normalizeNome(row[nomeCol2]) : row[nomeCol2]) : '';
-                        const data = dataCol2 >= 0 && row[dataCol2] ? normalizeData(row[dataCol2]) : '';
-                        
-                        if (cnpj && !isNaN(valor)) {
-                            const key = `${cnpj}_${valor.toFixed(2)}`;
-                            if (!matchedInFile2.has(key)) {
-                                onlyInFile2.push({
-                                    cnpj: cnpj,
-                                    valor: valor,
-                                    nome: nome,
-                                    data: data,
-                                    row: row,
-                                    index: index + headerRow + 1
-                                });
-                            }
-                        }
-                    }
-                });
-                
-                updateProgress(100, 'Análise concluída!');
-                
-                // Salva os resultados para uso posterior no download
-                analysisResults = {
-                    matches,
-                    onlyInFile1,
-                    onlyInFile2,
-                    config: {
-                        cnpjCol1,
-                        valorCol1,
-                        nomeCol1,
-                        dataCol1,
-                        cnpjCol2,
-                        valorCol2,
-                        nomeCol2,
-                        dataCol2,
-                        tolerancia,
-                        ignoreChars,
-                        compareNames,
-                        headerRow,
-                        selectedCriteria
-                    }
-                };
-                
-                // Log de resultados para debug
-                addDebugInfo(`Correspondências encontradas: ${matches.length}`);
-                addDebugInfo(`Apenas no Arquivo 1: ${onlyInFile1.length}`);
-                addDebugInfo(`Apenas no Arquivo 2: ${onlyInFile2.length}`);
-                
-                // Verificação de integridade
-                const totalFile1 = matches.length + onlyInFile1.length;
-                const totalFile2 = matches.length + onlyInFile2.length;
-                addDebugInfo(`Total de registros no Arquivo 1: ${totalFile1}`);
-                addDebugInfo(`Total de registros no Arquivo 2: ${totalFile2}`);
-                
-                // Atualiza contadores
-                matchCount.textContent = matches.length;
-                onlyFile1Count.textContent = onlyInFile1.length;
-                onlyFile2Count.textContent = onlyInFile2.length;
-                
-                // Exibe os resultados
-                displayResults(matches, onlyInFile1, onlyInFile2);
-                
-                // Mostra a seção de resultados
-                resultsSection.style.display = 'block';
-            }
-
-            // Formata CNPJ/CPF
-            function formatCnpj(cnpj) {
-                if (!cnpj) return '';
-                
-                if (cnpj.length === 11) {
-                    return cnpj.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                } else if (cnpj.length === 14) {
-                    return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-                }
-                return cnpj;
-            }
-
-            // Formata valor monetário
-            function formatValor(valor) {
-                return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
-            }
-
-            // Aplica filtros aos resultados
-            function applyFilters() {
-                if (!analysisResults) return;
-                
-                const cnpjFilter = filterCnpj.value.toLowerCase();
-                const nomeFilter = filterNome.value.toLowerCase();
-                const typeFilter = filterType.value;
-                
-                let filteredMatches = analysisResults.matches;
-                let filteredOnlyInFile1 = analysisResults.onlyInFile1;
-                let filteredOnlyInFile2 = analysisResults.onlyInFile2;
-                
-                // Aplicar filtro por CNPJ
-                if (cnpjFilter) {
-                    filteredMatches = filteredMatches.filter(item => 
-                        item.cnpj && item.cnpj.toLowerCase().includes(cnpjFilter)
-                    );
-                    filteredOnlyInFile1 = filteredOnlyInFile1.filter(item => 
-                        item.cnpj && item.cnpj.toLowerCase().includes(cnpjFilter)
-                    );
-                    filteredOnlyInFile2 = filteredOnlyInFile2.filter(item => 
-                        item.cnpj && item.cnpj.toLowerCase().includes(cnpjFilter)
-                    );
-                }
-                
-                // Aplicar filtro por nome
-                if (nomeFilter) {
-                    filteredMatches = filteredMatches.filter(item => 
-                        item.nome && item.nome.toLowerCase().includes(nomeFilter)
-                    );
-                    filteredOnlyInFile1 = filteredOnlyInFile1.filter(item => 
-                        item.nome && item.nome.toLowerCase().includes(nomeFilter)
-                    );
-                    filteredOnlyInFile2 = filteredOnlyInFile2.filter(item => 
-                        item.nome && item.nome.toLowerCase().includes(nomeFilter)
-                    );
-                }
-                
-                // Aplicar filtro por tipo
-                if (typeFilter !== 'all') {
-                    if (typeFilter === 'matches') {
-                        filteredOnlyInFile1 = [];
-                        filteredOnlyInFile2 = [];
-                    } else if (typeFilter === 'only-file1') {
-                        filteredMatches = [];
-                        filteredOnlyInFile2 = [];
-                    } else if (typeFilter === 'only-file2') {
-                        filteredMatches = [];
-                        filteredOnlyInFile1 = [];
-                    }
-                }
-                
-                // Salva resultados filtrados
-                filteredResults = {
-                    matches: filteredMatches,
-                    onlyInFile1: filteredOnlyInFile1,
-                    onlyInFile2: filteredOnlyInFile2
-                };
-                
-                // Exibe os resultados filtrados
-                displayResults(filteredMatches, filteredOnlyInFile1, filteredOnlyInFile2);
-                
-                // Atualiza contadores
-                matchCount.textContent = filteredMatches.length;
-                onlyFile1Count.textContent = filteredOnlyInFile1.length;
-                onlyFile2Count.textContent = filteredOnlyInFile2.length;
-            }
-
-            // Função para exibir os resultados na interface
-            function displayResults(matches, onlyInFile1, onlyInFile2) {
-                commonResults.innerHTML = '';
-                differentResults.innerHTML = '';
-                
-                if (matches.length === 0) {
-                    commonResults.innerHTML = '<div class="result-item">Nenhum pagamento correspondente encontrado.</div>';
-                } else {
-                    matches.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'result-item';
-                        
-                        let content = `<strong>${formatCnpj(item.cnpj)}</strong> - ${formatValor(item.valor)}`;
-                        if (item.nome) content += ` - ${item.nome}`;
-                        if (item.tolerancia) content += ` <span class="result-details">(Diferença: ${formatValor(item.tolerancia)})</span>`;
-                        if (item.type === 'tolerance') content += ` <span class="result-details">(Correspondência por tolerância)</span>`;
-                        content += ` <span class="result-details">[Arq1: Linha ${item.file1Index}, Arq2: Linha ${item.file2Index}]</span>`;
-                        
-                        div.innerHTML = content;
-                        commonResults.appendChild(div);
-                    });
-                }
-                
-                if (onlyInFile1.length === 0 && onlyInFile2.length === 0) {
-                    differentResults.innerHTML = '<div class="result-item">Nenhuma diferença encontrada.</div>';
-                } else {
-                    onlyInFile1.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'result-item';
-                        
-                        let content = `<strong>${formatCnpj(item.cnpj)}</strong> - ${formatValor(item.valor)}`;
-                        if (item.nome) content += ` - ${item.nome}`;
-                        content += ` <span class="result-details">[Apenas no Arquivo 1 - Linha ${item.index}]</span>`;
-                        
-                        div.innerHTML = content;
-                        differentResults.appendChild(div);
-                    });
-                    
-                    onlyInFile2.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'result-item';
-                        
-                        let content = `<strong>${formatCnpj(item.cnpj)}</strong> - ${formatValor(item.valor)}`;
-                        if (item.nome) content += ` - ${item.nome}`;
-                        content += ` <span class="result-details">[Apenas no Arquivo 2 - Linha ${item.index}]</span>`;
-                        
-                        div.innerHTML = content;
-                        differentResults.appendChild(div);
-                    });
-                }
-            }
-
-            // Event listener para o botão de download
-            downloadBtn.addEventListener('click', function() {
-                if (!analysisResults) {
-                    showGlobalError('Nenhum resultado para exportar. Por favor, analise os arquivos primeiro.');
-                    return;
-                }
-                
-                // Usa resultados filtrados se disponíveis, senão usa todos
-                const resultsToExport = filteredResults || analysisResults;
-                
-                // Cria uma nova pasta de trabalho
-                const wb = XLSX.utils.book_new();
-                
-                // Adiciona planilha com correspondências
-                const matchesData = [
-                    ['CNPJ/CPF', 'Valor', 'Nome', 'Data', 'Linha no Arquivo 1', 'Linha no Arquivo 2', 'Diferença de Valor', 'Tipo de Correspondência']
-                ];
-                
-                resultsToExport.matches.forEach(item => {
-                    matchesData.push([
-                        formatCnpj(item.cnpj),
-                        item.valor,
-                        item.nome || '',
-                        item.data || '',
-                        item.file1Index,
-                        item.file2Index,
-                        item.tolerancia || 0,
-                        item.type === 'tolerance' ? 'Por tolerância' : 'Exata'
-                    ]);
-                });
-                
-                const matchesWs = XLSX.utils.aoa_to_sheet(matchesData);
-                XLSX.utils.book_append_sheet(wb, matchesWs, 'Correspondências');
-                
-                // Adiciona planilha com apenas no arquivo 1
-                const onlyFile1Data = [
-                    ['CNPJ/CPF', 'Valor', 'Nome', 'Data', 'Linha no Arquivo 1']
-                ];
-                
-                resultsToExport.onlyInFile1.forEach(item => {
-                    onlyFile1Data.push([
-                        formatCnpj(item.cnpj),
-                        item.valor,
-                        item.nome || '',
-                        item.data || '',
-                        item.index
-                    ]);
-                });
-                
-                const onlyFile1Ws = XLSX.utils.aoa_to_sheet(onlyFile1Data);
-                XLSX.utils.book_append_sheet(wb, onlyFile1Ws, 'Apenas no Arquivo 1');
-                
-                // Adiciona planilha com apenas no arquivo 2
-                const onlyFile2Data = [
-                    ['CNPJ/CPF', 'Valor', 'Nome', 'Data', 'Linha no Arquivo 2']
-                ];
-                
-                resultsToExport.onlyInFile2.forEach(item => {
-                    onlyFile2Data.push([
-                        formatCnpj(item.cnpj),
-                        item.valor,
-                        item.nome || '',
-                        item.data || '',
-                        item.index
-                    ]);
-                });
-                
-                const onlyFile2Ws = XLSX.utils.aoa_to_sheet(onlyFile2Data);
-                XLSX.utils.book_append_sheet(wb, onlyFile2Ws, 'Apenas no Arquivo 2');
-                
-                // Adiciona planilha com resumo
-                const summaryData = [
-                    ['Relatório de Análise de Pagamentos'],
-                    [''],
-                    ['Data da análise', new Date().toLocaleDateString('pt-BR')],
-                    [''],
-                    ['Total de correspondências', resultsToExport.matches.length],
-                    ['Total apenas no Arquivo 1', resultsToExport.onlyInFile1.length],
-                    ['Total apenas no Arquivo 2', resultsToExport.onlyInFile2.length],
-                    [''],
-                    ['Configurações utilizadas:'],
-                    ['Tolerância de valores', analysisResults.config.tolerancia],
-                    ['Ignorar caracteres especiais', analysisResults.config.ignoreChars ? 'Sim' : 'Não'],
-                    ['Comparar nomes', analysisResults.config.compareNames ? 'Sim' : 'Não'],
-                    ['Linha do cabeçalho', analysisResults.config.headerRow],
-                    ['Critérios adicionais', analysisResults.config.selectedCriteria.join(', ')],
-                    [''],
-                    ['Arquivo 1:'],
-                    ['Coluna CNPJ/CPF', file1Headers[analysisResults.config.cnpjCol1]],
-                    ['Coluna Valor', file1Headers[analysisResults.config.valorCol1]],
-                    ['Coluna Nome', analysisResults.config.nomeCol1 >= 0 ? file1Headers[analysisResults.config.nomeCol1] : 'Não utilizada'],
-                    ['Coluna Data', analysisResults.config.dataCol1 >= 0 ? file1Headers[analysisResults.config.dataCol1] : 'Não utilizada'],
-                    [''],
-                    ['Arquivo 2:'],
-                    ['Coluna CNPJ/CPF', file2Headers[analysisResults.config.cnpjCol2]],
-                    ['Coluna Valor', file2Headers[analysisResults.config.valorCol2]],
-                    ['Coluna Nome', analysisResults.config.nomeCol2 >= 0 ? file2Headers[analysisResults.config.nomeCol2] : 'Não utilizada'],
-                    ['Coluna Data', analysisResults.config.dataCol2 >= 0 ? file2Headers[analysisResults.config.dataCol2] : 'Não utilizada']
-                ];
-                
-                const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-                XLSX.utils.book_append_sheet(wb, summaryWs, 'Resumo');
-                
-                // Gera o arquivo Excel e faz o download
-                XLSX.writeFile(wb, 'relatorio_pagamentos.xlsx');
-                showGlobalSuccess('Relatório exportado com sucesso!');
+        // Event Listeners
+        file1Input.addEventListener('change', (e) => handleFileUpload(e, 1));
+        file2Input.addEventListener('change', (e) => handleFileUpload(e, 2));
+        analyzeBtn.addEventListener('click', analyzeFiles);
+        downloadBtn.addEventListener('click', downloadReport);
+        debugToggle.addEventListener('click', toggleDebugInfo);
+        
+        // Adicionar event listeners para as abas de configuração
+        configTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Remover classe active de todas as abas e conteúdos
+                configTabs.forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.config-content').forEach(c => c.classList.remove('active'));
+                
+                // Adicionar classe active à aba e conteúdo clicados
+                tab.classList.add('active');
+                document.getElementById(`${tabId}-config`).classList.add('active');
             });
         });
+
+        // Funções
+        function handleFileUpload(event, fileNumber) {
+            const file = event.target.files[0];
+            const fileNameElement = document.getElementById(`file${fileNumber}-name`);
+            const fileErrorElement = document.getElementById(`file${fileNumber}-error`);
+            
+            if (!file) return;
+            
+            // Verificar se é um arquivo Excel
+            if (!file.name.match(/\.(xlsx|xls)$/)) {
+                fileErrorElement.textContent = 'Por favor, selecione um arquivo Excel válido.';
+                fileErrorElement.style.display = 'block';
+                fileNameElement.textContent = 'Arquivo inválido';
+                event.target.value = '';
+                updateAnalyzeButton();
+                return;
+            }
+            
+            fileErrorElement.style.display = 'none';
+            fileNameElement.textContent = file.name;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Pegar a primeira planilha
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // Converter para JSON
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    
+                    // Extrair cabeçalhos (primeira linha)
+                    const headers = jsonData[0];
+                    
+                    // Salvar dados e cabeçalhos
+                    if (fileNumber === 1) {
+                        file1Data = jsonData;
+                        file1Columns = headers;
+                        populateColumnDropdown('file1', headers);
+                    } else {
+                        file2Data = jsonData;
+                        file2Columns = headers;
+                        populateColumnDropdown('file2', headers);
+                    }
+                    
+                    updateAnalyzeButton();
+                    showSuccess(`Arquivo ${fileNumber} carregado com sucesso!`);
+                } catch (error) {
+                    console.error('Erro ao processar arquivo:', error);
+                    fileErrorElement.textContent = 'Erro ao processar o arquivo. Verifique se é um Excel válido.';
+                    fileErrorElement.style.display = 'block';
+                    fileNameElement.textContent = 'Erro no processamento';
+                }
+            };
+            
+            reader.onerror = function() {
+                fileErrorElement.textContent = 'Erro ao ler o arquivo.';
+                fileErrorElement.style.display = 'block';
+                fileNameElement.textContent = 'Erro de leitura';
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        function populateColumnDropdown(filePrefix, headers) {
+            // Limpar dropdowns existentes
+            const dropdowns = [
+                `${filePrefix}-cnpj-column`,
+                `${filePrefix}-valor-column`,
+                `${filePrefix}-nome-column`,
+                `${filePrefix}-data-column`
+            ];
+            
+            dropdowns.forEach(dropdownId => {
+                const dropdown = document.getElementById(dropdownId);
+                // Manter a primeira opção e limpar o resto
+                dropdown.innerHTML = '<option value="">Selecionar coluna</option>';
+                
+                // Adicionar opções para cada cabeçalho
+                headers.forEach((header, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${header} (Coluna ${index + 1})`;
+                    dropdown.appendChild(option);
+                });
+            });
+        }
+
+        function updateAnalyzeButton() {
+            // Habilitar o botão apenas se ambos os arquivos foram carregados
+            const file1Loaded = file1Data !== null;
+            const file2Loaded = file2Data !== null;
+            
+            analyzeBtn.disabled = !(file1Loaded && file2Loaded);
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            
+            // Rolar para a mensagem de erro
+            errorMessage.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function analyzeFiles() {
+            // Validar seleção de colunas
+            const file1CnpjCol = document.getElementById('file1-cnpj-column').value;
+            const file1ValorCol = document.getElementById('file1-valor-column').value;
+            const file2CnpjCol = document.getElementById('file2-cnpj-column').value;
+            const file2ValorCol = document.getElementById('file2-valor-column').value;
+            
+            if (file1CnpjCol === '' || file1ValorCol === '' || file2CnpjCol === '' || file2ValorCol === '') {
+                showError('Por favor, selecione as colunas obrigatórias (CNPJ e Valor) para ambos os arquivos.');
+                return;
+            }
+            
+            hideMessages();
+            
+            // Mostrar loading
+            loadingSection.style.display = 'block';
+            analyzeBtn.disabled = true;
+            progressBar.style.width = '0%';
+            
+            // Simular progresso (em um caso real, isso seria baseado no processamento real)
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    processComparison();
+                }
+            }, 100);
+        }
+
+        function processComparison() {
+            try {
+                // Obter configurações
+                const file1CnpjCol = parseInt(document.getElementById('file1-cnpj-column').value);
+                const file1ValorCol = parseInt(document.getElementById('file1-valor-column').value);
+                const file1NomeCol = document.getElementById('file1-nome-column').value;
+                const file1DataCol = document.getElementById('file1-data-column').value;
+                
+                const file2CnpjCol = parseInt(document.getElementById('file2-cnpj-column').value);
+                const file2ValorCol = parseInt(document.getElementById('file2-valor-column').value);
+                const file2NomeCol = document.getElementById('file2-nome-column').value;
+                const file2DataCol = document.getElementById('file2-data-column').value;
+                
+                const tolerancia = parseFloat(document.getElementById('tolerancia').value);
+                const ignorarCaracteres = document.getElementById('ignorar-caracteres').value === 'sim';
+                const compararNomes = document.getElementById('comparar-nomes').value === 'sim';
+                
+                // Processar dados (ignorar cabeçalhos)
+                const processedFile1 = processData(file1Data, 1, file1CnpjCol, file1ValorCol, file1NomeCol, file1DataCol, ignorarCaracteres);
+                const processedFile2 = processData(file2Data, 2, file2CnpjCol, file2ValorCol, file2NomeCol, file2DataCol, ignorarCaracteres);
+                
+                // Comparar os dados
+                results = compareData(processedFile1, processedFile2, tolerancia, compararNomes);
+                
+                // Exibir resultados
+                displayResults(results);
+                
+                // Esconder loading e mostrar resultados
+                loadingSection.style.display = 'none';
+                resultsSection.style.display = 'block';
+                
+                // Rolar para os resultados
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+                
+                showSuccess('Análise concluída com sucesso!');
+            } catch (error) {
+                console.error('Erro durante a análise:', error);
+                loadingSection.style.display = 'none';
+                showError('Ocorreu um erro durante a análise. Verifique os arquivos e tente novamente.');
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function processData(data, fileNumber, cnpjCol, valorCol, nomeCol, dataCol, ignorarCaracteres) {
+            const processed = [];
+            
+            // Ignorar a primeira linha (cabeçalhos)
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if (!row || row.length === 0) continue;
+                
+                // Extrair valores das colunas selecionadas
+                let cnpj = row[cnpjCol];
+                let valor = row[valorCol];
+                let nome = nomeCol !== '' ? row[nomeCol] : '';
+                let dataValue = dataCol !== '' ? row[dataCol] : '';
+                
+                // Processar CNPJ
+                if (cnpj !== undefined && cnpj !== null) {
+                    cnpj = cnpj.toString().trim();
+                    
+                    if (ignorarCaracteres) {
+                        // Remover caracteres não numéricos
+                        cnpj = cnpj.replace(/\D/g, '');
+                    }
+                    
+                    // Se após a limpeza o CNPJ estiver vazio, pular esta linha
+                    if (cnpj === '') continue;
+                } else {
+                    continue; // Pular linhas sem CNPJ
+                }
+                
+                // Processar valor
+                if (valor !== undefined && valor !== null) {
+                    // Converter para número, tratando diferentes formatos
+                    if (typeof valor === 'string') {
+                        // Remover possíveis símbolos de moeda e espaços
+                        valor = valor.replace(/[^\d,.-]/g, '').replace(',', '.');
+                    }
+                    valor = parseFloat(valor);
+                    
+                    // Se não for um número válido, pular esta linha
+                    if (isNaN(valor)) continue;
+                } else {
+                    continue; // Pular linhas sem valor
+                }
+                
+                // Processar nome (se fornecido)
+                if (nome !== undefined && nome !== null) {
+                    nome = nome.toString().trim();
+                } else {
+                    nome = '';
+                }
+                
+                // Processar data (se fornecida)
+                if (dataValue !== undefined && dataValue !== null) {
+                    dataValue = dataValue.toString().trim();
+                } else {
+                    dataValue = '';
+                }
+                
+                // Adicionar à lista processada
+                processed.push({
+                    file: fileNumber,
+                    originalRow: row,
+                    cnpj: cnpj,
+                    valor: valor,
+                    nome: nome,
+                    data: dataValue
+                });
+            }
+            
+            return processed;
+        }
+
+        function compareData(data1, data2, tolerancia, compararNomes) {
+            const matches = [];
+            const onlyInFile1 = [];
+            const onlyInFile2 = [...data2];
+            
+            // Para cada item no arquivo 1, verificar se existe correspondência no arquivo 2
+            for (const item1 of data1) {
+                let foundMatch = false;
+                
+                for (let j = 0; j < onlyInFile2.length; j++) {
+                    const item2 = onlyInFile2[j];
+                    
+                    // Verificar se os CNPJs correspondem
+                    if (item1.cnpj === item2.cnpj) {
+                        // Verificar se os valores estão dentro da tolerância
+                        const diff = Math.abs(item1.valor - item2.valor);
+                        
+                        if (diff <= tolerancia) {
+                            // Verificar nomes se necessário
+                            let nomeMatch = true;
+                            if (compararNomes && item1.nome && item2.nome) {
+                                // Simples verificação de similaridade (poderia ser mais sofisticada)
+                                nomeMatch = areNamesSimilar(item1.nome, item2.nome);
+                            }
+                            
+                            if (nomeMatch) {
+                                // Encontrou uma correspondência
+                                matches.push({
+                                    item1: item1,
+                                    item2: item2,
+                                    valorDiff: diff
+                                });
+                                
+                                // Remover do array onlyInFile2
+                                onlyInFile2.splice(j, 1);
+                                foundMatch = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (!foundMatch) {
+                    onlyInFile1.push(item1);
+                }
+            }
+            
+            return {
+                matches: matches,
+                onlyInFile1: onlyInFile1,
+                onlyInFile2: onlyInFile2
+            };
+        }
+
+        function areNamesSimilar(name1, name2) {
+            // Converter para minúsculas e remover acentos
+            const normalize = (str) => {
+                return str.toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            };
+            
+            const n1 = normalize(name1);
+            const n2 = normalize(name2);
+            
+            // Verificar se um nome contém o outro ou são iguais
+            return n1 === n2 || n1.includes(n2) || n2.includes(n1);
+        }
+
+        function displayResults(results) {
+            // Atualizar contadores
+            document.getElementById('only-in-file1-count').textContent = results.onlyInFile1.length;
+            document.getElementById('only-in-file2-count').textContent = results.onlyInFile2.length;
+            document.getElementById('matches-count').textContent = results.matches.length;
+            
+            // Limpar resultados anteriores
+            commonResults.innerHTML = '';
+            differentResults.innerHTML = '';
+            
+            // Exibir correspondências
+            results.matches.forEach(match => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                
+                const details = `
+                    <div><strong>CNPJ:</strong> ${formatCnpj(match.item1.cnpj)}</div>
+                    <div><strong>Valor:</strong> R$ ${match.item1.valor.toFixed(2)}</div>
+                    ${match.item1.nome ? `<div><strong>Nome:</strong> ${match.item1.nome}</div>` : ''}
+                    ${match.item1.data ? `<div><strong>Data:</strong> ${match.item1.data}</div>` : ''}
+                    <div class="result-details">Correspondência exata entre os arquivos</div>
+                `;
+                
+                item.innerHTML = details;
+                commonResults.appendChild(item);
+            });
+            
+            // Exibir itens apenas no arquivo 1
+            results.onlyInFile1.forEach(item => {
+                const elem = document.createElement('div');
+                elem.className = 'result-item';
+                
+                const details = `
+                    <div><strong>CNPJ:</strong> ${formatCnpj(item.cnpj)}</div>
+                    <div><strong>Valor:</strong> R$ ${item.valor.toFixed(2)}</div>
+                    ${item.nome ? `<div><strong>Nome:</strong> ${item.nome}</div>` : ''}
+                    ${item.data ? `<div><strong>Data:</strong> ${item.data}</div>` : ''}
+                    <div class="result-details">Presente apenas no Arquivo 1</div>
+                `;
+                
+                elem.innerHTML = details;
+                differentResults.appendChild(elem);
+            });
+            
+            // Exibir itens apenas no arquivo 2
+            results.onlyInFile2.forEach(item => {
+                const elem = document.createElement('div');
+                elem.className = 'result-item';
+                
+                const details = `
+                    <div><strong>CNPJ:</strong> ${formatCnpj(item.cnpj)}</div>
+                    <div><strong>Valor:</strong> R$ ${item.valor.toFixed(2)}</div>
+                    ${item.nome ? `<div><strong>Nome:</strong> ${item.nome}</div>` : ''}
+                    ${item.data ? `<div><strong>Data:</strong> ${item.data}</div>` : ''}
+                    <div class="result-details">Presente apenas no Arquivo 2</div>
+                `;
+                
+                elem.innerHTML = details;
+                differentResults.appendChild(elem);
+            });
+            
+            // Adicionar event listeners para os filtros
+            document.getElementById('filter-cnpj').addEventListener('input', filterResults);
+            document.getElementById('filter-nome').addEventListener('input', filterResults);
+            document.getElementById('filter-status').addEventListener('change', filterResults);
+        }
+
+        function formatCnpj(cnpj) {
+            // Formatar CNPJ se tiver 14 dígitos
+            if (cnpj.length === 14) {
+                return `${cnpj.substring(0, 2)}.${cnpj.substring(2, 5)}.${cnpj.substring(5, 8)}/${cnpj.substring(8, 12)}-${cnpj.substring(12)}`;
+            }
+            
+            // Formatar CPF se tiver 11 dígitos
+            if (cnpj.length === 11) {
+                return `${cnpj.substring(0, 3)}.${cnpj.substring(3, 6)}.${cnpj.substring(6, 9)}-${cnpj.substring(9)}`;
+            }
+            
+            // Retornar o valor original se não for CNPJ/CPF com tamanho esperado
+            return cnpj;
+        }
+
+        function filterResults() {
+            const cnpjFilter = document.getElementById('filter-cnpj').value.toLowerCase();
+            const nomeFilter = document.getElementById('filter-nome').value.toLowerCase();
+            const statusFilter = document.getElementById('filter-status').value;
+            
+            // Filtrar correspondências
+            const commonItems = commonResults.querySelectorAll('.result-item');
+            commonItems.forEach(item => {
+                const cnpj = item.querySelector('div:first-child').textContent.toLowerCase();
+                const nome = item.querySelector('div:nth-child(3)') ? item.querySelector('div:nth-child(3)').textContent.toLowerCase() : '';
+                const status = 'correspondentes';
+                
+                const show = (cnpj.includes(cnpjFilter) || cnpjFilter === '') &&
+                            (nome.includes(nomeFilter) || nomeFilter === '') &&
+                            (statusFilter === 'todos' || statusFilter === 'correspondentes');
+                
+                item.style.display = show ? 'flex' : 'none';
+            });
+            
+            // Filtrar divergências
+            const differentItems = differentResults.querySelectorAll('.result-item');
+            differentItems.forEach(item => {
+                const cnpj = item.querySelector('div:first-child').textContent.toLowerCase();
+                const nome = item.querySelector('div:nth-child(3)') ? item.querySelector('div:nth-child(3)').textContent.toLowerCase() : '';
+                const statusText = item.querySelector('.result-details').textContent.toLowerCase();
+                let status = '';
+                
+                if (statusText.includes('arquivo 1')) status = 'apenas-arquivo1';
+                if (statusText.includes('arquivo 2')) status = 'apenas-arquivo2';
+                
+                const show = (cnpj.includes(cnpjFilter) || cnpjFilter === '') &&
+                            (nome.includes(nomeFilter) || nomeFilter === '') &&
+                            (statusFilter === 'todos' || statusFilter === status);
+                
+                item.style.display = show ? 'flex' : 'none';
+            });
+        }
+
+        function downloadReport() {
+            // Criar um workbook para o relatório
+            const wb = XLSX.utils.book_new();
+            
+            // Adicionar aba de correspondências
+            const matchesData = [
+                ['CNPJ', 'Valor Arquivo 1', 'Valor Arquivo 2', 'Diferença', 'Nome Arquivo 1', 'Nome Arquivo 2', 'Data Arquivo 1', 'Data Arquivo 2', 'Status']
+            ];
+            
+            results.matches.forEach(match => {
+                matchesData.push([
+                    formatCnpj(match.item1.cnpj),
+                    match.item1.valor,
+                    match.item2.valor,
+                    match.valorDiff,
+                    match.item1.nome,
+                    match.item2.nome,
+                    match.item1.data,
+                    match.item2.data,
+                    'Correspondência'
+                ]);
+            });
+            
+            const matchesSheet = XLSX.utils.aoa_to_sheet(matchesData);
+            XLSX.utils.book_append_sheet(wb, matchesSheet, 'Correspondências');
+            
+            // Adicionar aba de apenas no arquivo 1
+            const onlyInFile1Data = [
+                ['CNPJ', 'Valor', 'Nome', 'Data', 'Status']
+            ];
+            
+            results.onlyInFile1.forEach(item => {
+                onlyInFile1Data.push([
+                    formatCnpj(item.cnpj),
+                    item.valor,
+                    item.nome,
+                    item.data,
+                    'Apenas no Arquivo 1'
+                ]);
+            });
+            
+            const onlyInFile1Sheet = XLSX.utils.aoa_to_sheet(onlyInFile1Data);
+            XLSX.utils.book_append_sheet(wb, onlyInFile1Sheet, 'Apenas no Arquivo 1');
+            
+            // Adicionar aba de apenas no arquivo 2
+            const onlyInFile2Data = [
+                ['CNPJ', 'Valor', 'Nome', 'Data', 'Status']
+            ];
+            
+            results.onlyInFile2.forEach(item => {
+                onlyInFile2Data.push([
+                    formatCnpj(item.cnpj),
+                    item.valor,
+                    item.nome,
+                    item.data,
+                    'Apenas no Arquivo 2'
+                ]);
+            });
+            
+            const onlyInFile2Sheet = XLSX.utils.aoa_to_sheet(onlyInFile2Data);
+            XLSX.utils.book_append_sheet(wb, onlyInFile2Sheet, 'Apenas no Arquivo 2');
+            
+            // Gerar arquivo e fazer download
+            XLSX.writeFile(wb, 'relatorio_analise.xlsx');
+            
+            showSuccess('Relatório baixado com sucesso!');
+        }
+
+        function toggleDebugInfo() {
+            if (debugInfo.style.display === 'none' || debugInfo.style.display === '') {
+                debugInfo.style.display = 'block';
+                debugToggle.textContent = 'Ocultar informações de depuração';
+                
+                // Preencher informações de depuração
+                let debugContent = '';
+                
+                if (file1Data) {
+                    debugContent += `Arquivo 1: ${file1Data.length - 1} linhas de dados\n`;
+                    debugContent += `Colunas: ${file1Columns.join(', ')}\n\n`;
+                }
+                
+                if (file2Data) {
+                    debugContent += `Arquivo 2: ${file2Data.length - 1} linhas de dados\n`;
+                    debugContent += `Colunas: ${file2Columns.join(', ')}\n\n`;
+                }
+                
+                if (results) {
+                    debugContent += `Resultados:\n`;
+                    debugContent += `- Correspondências: ${results.matches.length}\n`;
+                    debugContent += `- Apenas no Arquivo 1: ${results.onlyInFile1.length}\n`;
+                    debugContent += `- Apenas no Arquivo 2: ${results.onlyInFile2.length}\n`;
+                }
+                
+                debugInfo.textContent = debugContent;
+            } else {
+                debugInfo.style.display = 'none';
+                debugToggle.textContent = 'Mostrar informações de depuração';
+            }
+        }
     </script>
 </body>
 </html>
