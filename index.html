@@ -507,17 +507,6 @@
             flex-wrap: wrap;
         }
         
-        .debug-info {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 15px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            display: none;
-        }
-
         .high-similarity {
             color: var(--success-color);
             font-weight: bold;
@@ -527,7 +516,7 @@
             border-left: 4px solid var(--success-color);
         }
 
-        /* NOVOS ESTILOS ADICIONADOS */
+        /* MELHORIAS DO PRIMEIRO ARQUIVO */
         .tooltip {
             position: relative;
             display: inline-block;
@@ -591,43 +580,6 @@
             border-radius: 4px;
         }
 
-        .examples-section h4 {
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-
-        .examples-section ul {
-            margin-left: 20px;
-        }
-
-        .examples-section li {
-            margin-bottom: 8px;
-        }
-
-        .keyboard-shortcuts {
-            background-color: #fff8e1;
-            border: 1px solid #ffd54f;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-
-        .shortcut-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ffecb3;
-        }
-
-        .settings-panel {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-
         .performance-warning {
             background-color: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -635,14 +587,6 @@
             padding: 10px;
             margin: 10px 0;
             font-size: 0.9rem;
-        }
-
-        .batch-comparison {
-            background-color: #e3f2fd;
-            border: 1px solid #bbdefb;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 15px 0;
         }
     </style>
 </head>
@@ -655,7 +599,7 @@
         
         <div class="error-message" id="errorMessage"></div>
         
-        <!-- Seção de Exemplos -->
+        <!-- Seção de Exemplos (Melhoria do primeiro arquivo) -->
         <div class="examples-section">
             <h4>💡 Exemplos de Uso:</h4>
             <ul>
@@ -704,24 +648,6 @@
                 <p><strong>Como funciona:</strong> Selecione as colunas que deseja comparar em cada arquivo. 
                 O sistema irá comparar os <strong>conjuntos de valores</strong> das colunas selecionadas entre todos os arquivos, 
                 independente da ordem das colunas.</p>
-                <p><strong>Filtro automático:</strong> Apenas correspondências com 80% ou mais de similaridade serão consideradas.</p>
-            </div>
-
-            <!-- Painel de Atalhos -->
-            <div class="keyboard-shortcuts">
-                <h4>⌨️ Atalhos de Teclado:</h4>
-                <div class="shortcut-item">
-                    <span>Ctrl + 1-9</span>
-                    <span>Alternar entre abas de arquivos</span>
-                </div>
-                <div class="shortcut-item">
-                    <span>Ctrl + Enter</span>
-                    <span>Iniciar comparação</span>
-                </div>
-                <div class="shortcut-item">
-                    <span>Esc</span>
-                    <span>Limpar seleção</span>
-                </div>
             </div>
             
             <div class="config-section">
@@ -751,8 +677,8 @@
                             </span>
                         </span>
                     </label>
-                    <input type="number" id="similarityThreshold" min="80" max="100" value="80">
-                    <small style="color: #666;">Mínimo: 80% (apenas alta correspondência)</small>
+                    <input type="number" id="similarityThreshold" min="50" max="100" value="80">
+                    <small style="color: #666;">Mínimo: 50% - Recomendado: 80%</small>
                 </div>
             </div>
             
@@ -761,19 +687,6 @@
                 <div class="column-tabs" id="columnTabs"></div>
                 <div id="columnContainers"></div>
                 <p class="column-info">Selecione as colunas que deseja comparar em cada arquivo.</p>
-            </div>
-
-            <!-- Configurações Salvas -->
-            <div class="settings-panel" id="savedSettingsPanel" style="display: none;">
-                <h4>⚙️ Configurações Salvas</h4>
-                <select id="savedSettingsSelect" style="width: 100%; margin-bottom: 10px;">
-                    <option value="">-- Selecione uma configuração salva --</option>
-                </select>
-                <div>
-                    <button class="btn" id="loadSettingsBtn" style="display: none;">Carregar Configuração</button>
-                    <button class="btn btn-success" id="saveSettingsBtn">Salvar Configuração</button>
-                    <button class="btn btn-danger" id="deleteSettingsBtn" style="display: none;">Excluir Configuração</button>
-                </div>
             </div>
             
             <button class="btn btn-success" id="compareBtn">Iniciar Comparação (Ctrl+Enter)</button>
@@ -794,7 +707,7 @@
             <div class="summary-stats" id="summaryStats"></div>
             
             <div class="results-tabs" id="resultsTabs">
-                <div class="results-tab active" data-tab="matches">Correspondências (80%+)</div>
+                <div class="results-tab active" data-tab="matches">Correspondências</div>
                 <div class="results-tab" data-tab="file1-only">Apenas no Arquivo 1</div>
                 <div class="results-tab" data-tab="file2-only">Apenas no Arquivo 2</div>
             </div>
@@ -821,7 +734,7 @@
     </div>
     
     <footer>
-        <p>Comparador de Arquivos Excel &copy; 2025 - Encontre semelhanças entre seus dados</p>
+        <p>Comparador de Arquivos Excel &copy; 2023 - Encontre semelhanças entre seus dados</p>
     </footer>
 
     <script>
@@ -836,7 +749,6 @@
             'file2-only': 1
         };
         const pageSize = 50;
-        let savedSettings = JSON.parse(localStorage.getItem('excelComparatorSettings') || '{}');
         
         // Elementos DOM
         const uploadArea = document.getElementById('uploadArea');
@@ -867,11 +779,6 @@
         const exportFile1OnlyBtn = document.getElementById('exportFile1OnlyBtn');
         const exportFile2OnlyBtn = document.getElementById('exportFile2OnlyBtn');
         const errorMessage = document.getElementById('errorMessage');
-        const savedSettingsPanel = document.getElementById('savedSettingsPanel');
-        const savedSettingsSelect = document.getElementById('savedSettingsSelect');
-        const loadSettingsBtn = document.getElementById('loadSettingsBtn');
-        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-        const deleteSettingsBtn = document.getElementById('deleteSettingsBtn');
 
         // Event Listeners
         browseBtn.addEventListener('click', () => fileInput.click());
@@ -879,12 +786,8 @@
         clearFilesBtn.addEventListener('click', clearFiles);
         searchType.addEventListener('change', toggleSimilarityThreshold);
         compareBtn.addEventListener('click', startComparison);
-        saveSettingsBtn.addEventListener('click', saveCurrentSettings);
-        loadSettingsBtn.addEventListener('click', loadSelectedSettings);
-        deleteSettingsBtn.addEventListener('click', deleteSelectedSettings);
-        savedSettingsSelect.addEventListener('change', updateSettingsButtons);
 
-        // Atalhos de teclado
+        // Atalhos de teclado (Melhoria do primeiro arquivo)
         document.addEventListener('keydown', handleKeyboardShortcuts);
 
         // Drag and Drop
@@ -903,93 +806,45 @@
             handleFiles(e.dataTransfer.files);
         });
 
-        // Inicializar configurações salvas
-        initializeSavedSettings();
-
-        // FUNÇÕES DE SIMILARIDADE MELHORADAS
+        // FUNÇÃO DE SIMILARIDADE OTIMIZADA - Combina o melhor dos dois
         function calculateSimilarity(str1, str2) {
-            // Primeiro, verifica se são exatamente iguais
-            if (str1 === str2) return 1;
+            // Converte para string e remove espaços
+            const cleanStr1 = str1 !== null && str1 !== undefined ? str1.toString().trim() : '';
+            const cleanStr2 = str2 !== null && str2 !== undefined ? str2.toString().trim() : '';
             
-            // Remove espaços extras e normaliza
-            const cleanStr1 = str1.toString().trim();
-            const cleanStr2 = str2.toString().trim();
+            // Se ambos estão vazios, considera 100% similar
+            if (cleanStr1 === '' && cleanStr2 === '') return 1;
             
-            // Tenta comparar como números (incluindo decimais e porcentagens)
-            const num1 = parseNumber(cleanStr1);
-            const num2 = parseNumber(cleanStr2);
+            // Remove zeros à esquerda (melhoria do segundo arquivo)
+            const noLeadingZero1 = cleanStr1.replace(/^0+/, '');
+            const noLeadingZero2 = cleanStr2.replace(/^0+/, '');
+            
+            if (noLeadingZero1 === noLeadingZero2) return 1;
+            
+            // Tenta comparar como números de forma simples
+            const num1 = parseFloat(cleanStr1.replace(/[^\d.,-]/g, '').replace(',', '.'));
+            const num2 = parseFloat(cleanStr2.replace(/[^\d.,-]/g, '').replace(',', '.'));
             
             if (!isNaN(num1) && !isNaN(num2)) {
-                // Se ambos são números válidos, calcula similaridade numérica
-                return calculateNumericSimilarity(num1, num2);
+                if (num1 === num2) return 1;
+                // Para números muito próximos, considera alta similaridade
+                if (Math.abs(num1 - num2) < 0.0001) return 0.95;
+                // Para números com pequena diferença relativa
+                const diff = Math.abs(num1 - num2);
+                const avg = (Math.abs(num1) + Math.abs(num2)) / 2;
+                if (avg > 0 && diff / avg < 0.01) return 0.9; // 1% de diferença
             }
             
-            // Se não são números, usa similaridade textual
+            // Similaridade textual usando abordagem simplificada
             return calculateTextSimilarity(cleanStr1, cleanStr2);
         }
         
-        function parseNumber(str) {
-            // Remove caracteres não numéricos, exceto ponto, vírgula e sinal de porcentagem
-            let cleanStr = str.replace(/[^\d,.%\-]/g, '');
-            
-            // Se termina com %, trata como porcentagem
-            const isPercentage = cleanStr.endsWith('%');
-            if (isPercentage) {
-                cleanStr = cleanStr.replace('%', '');
-            }
-            
-            // Substitui vírgula por ponto para parseFloat
-            cleanStr = cleanStr.replace(',', '.');
-            
-            // Remove múltiplos pontos decimais
-            const parts = cleanStr.split('.');
-            if (parts.length > 2) {
-                cleanStr = parts[0] + '.' + parts.slice(1).join('');
-            }
-            
-            const num = parseFloat(cleanStr);
-            
-            // Se era porcentagem, converte para decimal
-            if (isPercentage && !isNaN(num)) {
-                return num / 100;
-            }
-            
-            return num;
-        }
-        
-        function calculateNumericSimilarity(num1, num2) {
-            // Se são exatamente iguais
-            if (num1 === num2) return 1;
-            
-            // Se um dos números é zero, cuidado com divisão por zero
-            if (num1 === 0 || num2 === 0) {
-                return (num1 === num2) ? 1 : 0;
-            }
-            
-            // Calcula a diferença relativa
-            const diff = Math.abs(num1 - num2);
-            const avg = (Math.abs(num1) + Math.abs(num2)) / 2;
-            
-            // Similaridade baseada na diferença relativa
-            const relativeDiff = diff / avg;
-            
-            // Para números muito próximos, considera alta similaridade
-            if (relativeDiff < 0.01) { // 1% de diferença
-                return 0.95;
-            } else if (relativeDiff < 0.05) { // 5% de diferença
-                return 0.85;
-            } else if (relativeDiff < 0.1) { // 10% de diferença
-                return 0.7;
-            } else if (relativeDiff < 0.2) { // 20% de diferença
-                return 0.5;
-            }
-            
-            return 0;
-        }
-        
         function calculateTextSimilarity(str1, str2) {
+            if (!str1 || !str2 || str1 === '' || str2 === '') {
+                return (str1 === str2) ? 1 : 0;
+            }
+            
             const normalize = (str) => {
-                if (!str) return '';
                 return str.toString()
                     .toLowerCase()
                     .normalize('NFD')
@@ -1011,74 +866,42 @@
                 return shorter / longer;
             }
             
-            // Similaridade por Jaro-Winkler (melhor para nomes próprios)
-            return jaroWinklerSimilarity(normStr1, normStr2);
+            // Similaridade por Levenshtein (simples e eficaz)
+            return levenshteinSimilarity(normStr1, normStr2);
         }
         
-        function jaroWinklerSimilarity(s1, s2) {
-            if (s1 === s2) return 1;
+        function levenshteinSimilarity(s1, s2) {
+            const distance = levenshteinDistance(s1, s2);
+            const maxLength = Math.max(s1.length, s2.length);
+            return maxLength === 0 ? 1 : 1 - (distance / maxLength);
+        }
+        
+        function levenshteinDistance(s1, s2) {
+            const matrix = [];
             
-            const m = matchingCharacters(s1, s2);
-            if (m === 0) return 0;
-            
-            const t = transpositions(s1, s2, m);
-            const j = ((m / s1.length) + (m / s2.length) + ((m - t) / m)) / 3;
-            
-            // Winkler modification: boost for common prefix
-            let prefix = 0;
-            const maxPrefix = Math.min(4, s1.length, s2.length);
-            for (let i = 0; i < maxPrefix; i++) {
-                if (s1[i] === s2[i]) prefix++;
-                else break;
+            for (let i = 0; i <= s2.length; i++) {
+                matrix[i] = [i];
             }
             
-            return j + (prefix * 0.1 * (1 - j));
-        }
-        
-        function matchingCharacters(s1, s2) {
-            const maxDistance = Math.floor(Math.max(s1.length, s2.length) / 2) - 1;
-            let matches = 0;
-            const matched2 = new Array(s2.length).fill(false);
+            for (let j = 0; j <= s1.length; j++) {
+                matrix[0][j] = j;
+            }
             
-            for (let i = 0; i < s1.length; i++) {
-                const start = Math.max(0, i - maxDistance);
-                const end = Math.min(i + maxDistance + 1, s2.length);
-                
-                for (let j = start; j < end; j++) {
-                    if (!matched2[j] && s1[i] === s2[j]) {
-                        matches++;
-                        matched2[j] = true;
-                        break;
+            for (let i = 1; i <= s2.length; i++) {
+                for (let j = 1; j <= s1.length; j++) {
+                    if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
                     }
                 }
             }
             
-            return matches;
-        }
-        
-        function transpositions(s1, s2, matches) {
-            if (matches === 0) return 0;
-            
-            let transpositions = 0;
-            let k = 0;
-            const maxDistance = Math.floor(Math.max(s1.length, s2.length) / 2) - 1;
-            const matched2 = new Array(s2.length).fill(false);
-            
-            for (let i = 0; i < s1.length; i++) {
-                const start = Math.max(0, i - maxDistance);
-                const end = Math.min(i + maxDistance + 1, s2.length);
-                
-                for (let j = start; j < end; j++) {
-                    if (!matched2[j] && s1[i] === s2[j]) {
-                        if (i !== k && j !== k) transpositions++;
-                        matched2[j] = true;
-                        k++;
-                        break;
-                    }
-                }
-            }
-            
-            return transpositions / 2;
+            return matrix[s2.length][s1.length];
         }
 
         function calculateSetSimilarity(values1, values2, isExactSearch) {
@@ -1096,10 +919,10 @@
             
             // Para busca por similaridade, usa algoritmo melhorado
             let totalSimilarity = 0;
+            let matchesFound = 0;
             const usedIndexes = new Set();
             
-            // Para cada valor no primeiro conjunto, encontra a melhor correspondência no segundo
-            values1.forEach((val1, i) => {
+            values1.forEach(val1 => {
                 let bestSimilarity = 0;
                 let bestIndex = -1;
                 
@@ -1108,174 +931,28 @@
                     
                     const similarity = calculateSimilarity(val1, val2);
                     
-                    if (similarity > bestSimilarity) {
+                    // Limiar mais baixo para matching individual (50%)
+                    if (similarity > 0.5 && similarity > bestSimilarity) {
                         bestSimilarity = similarity;
                         bestIndex = j;
                     }
                 });
                 
-                if (bestIndex !== -1 && bestSimilarity > 0.6) { // Limiar mais baixo para matching individual
+                if (bestIndex !== -1) {
                     totalSimilarity += bestSimilarity;
+                    matchesFound++;
                     usedIndexes.add(bestIndex);
                 }
             });
             
+            // Se não encontrou matches, retorna 0
+            if (matchesFound === 0) return 0;
+            
             // Calcula similaridade média ponderada
-            const maxPossibleMatches = Math.max(values1.length, values2.length);
-            return maxPossibleMatches > 0 ? totalSimilarity / maxPossibleMatches : 0;
+            return totalSimilarity / Math.max(values1.length, values2.length);
         }
 
-        // NOVAS FUNÇÕES ADICIONADAS
-        function handleKeyboardShortcuts(e) {
-            if (e.ctrlKey) {
-                switch(e.key) {
-                    case 'Enter':
-                        e.preventDefault();
-                        if (compareBtn.style.display !== 'none') {
-                            startComparison();
-                        }
-                        break;
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                        e.preventDefault();
-                        const index = parseInt(e.key) - 1;
-                        if (index < fileData.length) {
-                            activateTab(index);
-                            activateColumnTab(index);
-                        }
-                        break;
-                }
-            } else if (e.key === 'Escape') {
-                clearFiles();
-            }
-        }
-
-        function initializeSavedSettings() {
-            if (Object.keys(savedSettings).length > 0) {
-                savedSettingsPanel.style.display = 'block';
-                updateSavedSettingsSelect();
-            }
-        }
-
-        function updateSavedSettingsSelect() {
-            savedSettingsSelect.innerHTML = '<option value="">-- Selecione uma configuração salva --</option>';
-            Object.keys(savedSettings).forEach(key => {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = key;
-                savedSettingsSelect.appendChild(option);
-            });
-        }
-
-        function updateSettingsButtons() {
-            const selected = savedSettingsSelect.value;
-            loadSettingsBtn.style.display = selected ? 'inline-block' : 'none';
-            deleteSettingsBtn.style.display = selected ? 'inline-block' : 'none';
-        }
-
-        function saveCurrentSettings() {
-            const settingsName = prompt('Digite um nome para esta configuração:');
-            if (!settingsName) return;
-
-            const settings = {
-                searchType: searchType.value,
-                similarityThreshold: similarityThreshold.value,
-                selectedColumns: {...selectedColumnsByFile}
-            };
-
-            savedSettings[settingsName] = settings;
-            localStorage.setItem('excelComparatorSettings', JSON.stringify(savedSettings));
-            
-            savedSettingsPanel.style.display = 'block';
-            updateSavedSettingsSelect();
-            savedSettingsSelect.value = settingsName;
-            updateSettingsButtons();
-            
-            alert(`Configuração "${settingsName}" salva com sucesso!`);
-        }
-
-        function loadSelectedSettings() {
-            const settingsName = savedSettingsSelect.value;
-            if (!settingsName) return;
-
-            const settings = savedSettings[settingsName];
-            if (!settings) return;
-
-            searchType.value = settings.searchType;
-            similarityThreshold.value = settings.similarityThreshold;
-            
-            // Aplicar seleção de colunas
-            if (settings.selectedColumns) {
-                selectedColumnsByFile = {...settings.selectedColumns};
-                updateCheckboxesFromSettings();
-            }
-
-            toggleSimilarityThreshold();
-            alert(`Configuração "${settingsName}" carregada com sucesso!`);
-        }
-
-        function deleteSelectedSettings() {
-            const settingsName = savedSettingsSelect.value;
-            if (!settingsName || !confirm(`Tem certeza que deseja excluir a configuração "${settingsName}"?`)) return;
-
-            delete savedSettings[settingsName];
-            localStorage.setItem('excelComparatorSettings', JSON.stringify(savedSettings));
-            
-            updateSavedSettingsSelect();
-            updateSettingsButtons();
-            
-            if (Object.keys(savedSettings).length === 0) {
-                savedSettingsPanel.style.display = 'none';
-            }
-        }
-
-        function updateCheckboxesFromSettings() {
-            Object.keys(selectedColumnsByFile).forEach(fileIndex => {
-                const container = document.getElementById(`column-${fileIndex}`);
-                if (!container) return;
-
-                const checkboxes = container.querySelectorAll('input[type="checkbox"]:not([id^="select-all-"])');
-                const selectedCols = selectedColumnsByFile[fileIndex] || [];
-
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = selectedCols.includes(checkbox.value);
-                });
-
-                const selectAllCheckbox = document.getElementById(`select-all-${fileIndex}`);
-                if (selectAllCheckbox) {
-                    selectAllCheckbox.checked = selectedCols.length === checkboxes.length;
-                }
-            });
-        }
-
-        function updateProgress(percent) {
-            progressBar.style.width = percent + '%';
-            progressText.textContent = percent + '%';
-        }
-
-        function simulateProgress() {
-            let width = 0;
-            const interval = setInterval(() => {
-                width += 5;
-                updateProgress(width);
-                
-                if (width >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        loadingSection.style.display = 'none';
-                        performComparison();
-                    }, 500);
-                }
-            }, 100);
-        }
-
+        // FUNÇÕES DE PAGINAÇÃO (Melhoria do primeiro arquivo)
         function getPaginatedData(data, page, pageSize) {
             const start = (page - 1) * pageSize;
             const end = start + pageSize;
@@ -1330,7 +1007,38 @@
             }
         }
 
-        // FUNÇÕES EXISTENTES (com algumas modificações)
+        function handleKeyboardShortcuts(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                if (compareBtn.style.display !== 'none') {
+                    startComparison();
+                }
+            } else if (e.key === 'Escape') {
+                clearFiles();
+            }
+        }
+
+        function updateProgress(percent) {
+            progressBar.style.width = percent + '%';
+            progressText.textContent = percent + '%';
+        }
+
+        function simulateProgress() {
+            let width = 0;
+            const interval = setInterval(() => {
+                width += 5;
+                updateProgress(width);
+                
+                if (width >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loadingSection.style.display = 'none';
+                        performComparison();
+                    }, 500);
+                }
+            }, 100);
+        }
+
         function handleFileSelect(e) {
             handleFiles(e.target.files);
         }
@@ -1682,10 +1390,6 @@
             }, 500);
         }
         
-        function filterHighConfidenceMatches(matches, threshold = 0.8) {
-            return matches.filter(match => match.similarity >= threshold * 100);
-        }
-        
         function performComparison() {
             comparisonResults = {
                 exactMatches: [],
@@ -1702,8 +1406,6 @@
                 compareCompleteRows(file1, file2, isExactSearch, threshold);
             }
             
-            comparisonResults.exactMatches = filterHighConfidenceMatches(comparisonResults.exactMatches, 0.8);
-            
             showResults();
         }
         
@@ -1711,7 +1413,7 @@
             const file1Rows = [];
             const file2Rows = [];
             
-            // Preparar linhas do arquivo 1
+            // Preparar linhas do arquivo 1 (incluindo valores vazios para consistência)
             for (let row1 = 1; row1 < file1.data.length; row1++) {
                 if (!file1.data[row1]) continue;
                 
@@ -1722,10 +1424,9 @@
                     const colIndex = file1.headers.indexOf(column);
                     if (colIndex !== -1 && file1.data[row1][colIndex] !== undefined) {
                         const value = file1.data[row1][colIndex];
-                        if (value !== null && value !== '' && value !== undefined) {
-                            rowValues.push(value.toString().trim());
-                            rowData[column] = value;
-                        }
+                        // Inclui valores vazios também para manter consistência
+                        rowValues.push(value !== null && value !== undefined ? value.toString().trim() : '');
+                        rowData[column] = value;
                     }
                 });
                 
@@ -1737,7 +1438,7 @@
                 });
             }
             
-            // Preparar linhas do arquivo 2
+            // Preparar linhas do arquivo 2 (incluindo valores vazios para consistência)
             for (let row2 = 1; row2 < file2.data.length; row2++) {
                 if (!file2.data[row2]) continue;
                 
@@ -1748,10 +1449,9 @@
                     const colIndex = file2.headers.indexOf(column);
                     if (colIndex !== -1 && file2.data[row2][colIndex] !== undefined) {
                         const value = file2.data[row2][colIndex];
-                        if (value !== null && value !== '' && value !== undefined) {
-                            rowValues.push(value.toString().trim());
-                            rowData[column] = value;
-                        }
+                        // Inclui valores vazios também para manter consistência
+                        rowValues.push(value !== null && value !== undefined ? value.toString().trim() : '');
+                        rowData[column] = value;
                     }
                 });
                 
@@ -1774,7 +1474,7 @@
                     
                     const similarity = calculateSetSimilarity(row1.values, row2.values, isExactSearch);
                     
-                    if (similarity >= 0.8 && similarity > bestSimilarity) {
+                    if (similarity >= threshold && similarity > bestSimilarity) {
                         bestSimilarity = similarity;
                         bestMatch = { 
                             row2, 
@@ -1784,13 +1484,13 @@
                     }
                 });
                 
-                if (bestMatch && bestSimilarity >= 0.8) {
+                if (bestMatch && bestSimilarity >= threshold) {
                     comparisonResults.exactMatches.push({
                         file1: file1.name,
                         row1: row1.rowIndex,
                         file2: file2.name,
                         row2: bestMatch.row2.rowIndex,
-                        similarity: Math.round(bestMatch.similarity * 100),
+                        similarity: Math.round(bestSimilarity * 100),
                         row1Data: row1.rowData,
                         row2Data: bestMatch.row2.rowData,
                         fullRow1: row1.fullRow,
@@ -1851,7 +1551,7 @@
             const statsHTML = `
                 <div class="stat-card match">
                     <div class="stat-value">${comparisonResults.exactMatches.length}</div>
-                    <div class="stat-label">Correspondências (80%+)</div>
+                    <div class="stat-label">Correspondências</div>
                 </div>
                 <div class="stat-card file1-only">
                     <div class="stat-value">${comparisonResults.file1Only.length}</div>
@@ -1868,7 +1568,7 @@
         
         function showMatches() {
             if (comparisonResults.exactMatches.length === 0) {
-                matchesContainer.innerHTML = '<div class="no-results"><p>Nenhuma correspondência com 80% ou mais de similaridade encontrada.</p></div>';
+                matchesContainer.innerHTML = '<div class="no-results"><p>Nenhuma correspondência encontrada com o limiar de similaridade configurado.</p><p>Tente reduzir o limiar de similaridade mínima.</p></div>';
                 return;
             }
             
@@ -1895,7 +1595,7 @@
             tableHTML += `</tr></thead><tbody>`;
             
             paginatedData.forEach(match => {
-                const similarityClass = 'high-similarity';
+                const similarityClass = match.similarity >= 90 ? 'high-similarity' : '';
                 
                 tableHTML += `
                     <tr class="match-row comparison-row">
@@ -2091,7 +1791,7 @@
             const selectedCols2 = selectedColumnsByFile[1] || [];
             
             const data = [
-                ['CORRESPONDÊNCIAS ENCONTRADAS (80%+ Similaridade)'],
+                ['CORRESPONDÊNCIAS ENCONTRADAS'],
                 [],
                 ['Similaridade', 'Arquivo 1 - Linha', 'Arquivo 2 - Linha']
             ];
