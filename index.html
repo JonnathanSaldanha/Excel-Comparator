@@ -3,1358 +3,1636 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnalisadorExcel</title>
+    <title>Comparador de Arquivos Excel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --light: #ecf0f1;
-            --dark: #34495e;
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
         }
         
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
             background-color: #f5f7fa;
-            color: #333;
+            color: var(--dark-color);
             line-height: 1.6;
-            padding: 20px;
         }
-
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+            padding: 20px;
         }
-
+        
         header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
             text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--light);
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
         }
-
+        
         h1 {
-            color: var(--primary);
+            font-size: 2.2rem;
             margin-bottom: 10px;
         }
-
-        .description {
-            color: #7f8c8d;
-            margin-bottom: 20px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
-
-        .upload-section {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .file-upload {
-            flex: 1;
-            min-width: 300px;
-            background-color: #f8f9fa;
-            border: 2px dashed #ced4da;
+        
+        .card {
+            background-color: white;
             border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--light-color);
+            padding-bottom: 10px;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--secondary-color);
+            border-radius: 8px;
+            padding: 40px 20px;
             text-align: center;
-            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            background-color: rgba(52, 152, 219, 0.05);
         }
-
-        .file-upload:hover {
-            border-color: var(--secondary);
-            background-color: #e8f4fc;
+        
+        .upload-area:hover {
+            background-color: rgba(52, 152, 219, 0.1);
         }
-
-        .file-upload h3 {
-            margin-bottom: 15px;
-            color: var(--primary);
+        
+        .upload-area.dragover {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-color: var(--primary-color);
         }
-
+        
         .file-input {
             display: none;
         }
-
-        .file-label {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: var(--secondary);
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-bottom: 15px;
-        }
-
-        .file-label:hover {
-            background-color: #2980b9;
-        }
-
-        .file-name {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #7f8c8d;
-        }
-
-        .file-error {
-            color: var(--danger);
-            font-size: 12px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .config-section {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .config-section h3 {
-            margin-bottom: 15px;
-            color: var(--primary);
-        }
-
-        .config-tabs {
-            display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
-        }
-
-        .config-tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-        }
-
-        .config-tab.active {
-            border-bottom: 3px solid var(--secondary);
-            font-weight: bold;
-        }
-
-        .config-content {
-            display: none;
-        }
-
-        .config-content.active {
-            display: block;
-        }
-
-        .config-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .config-group {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .config-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .config-group select, .config-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .config-error {
-            color: var(--danger);
-            font-size: 12px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .analyze-btn {
-            display: block;
-            width: 200px;
-            margin: 30px auto;
-            padding: 15px;
-            background-color: var(--success);
+        
+        .btn {
+            background-color: var(--secondary-color);
             color: white;
             border: none;
+            padding: 12px 25px;
             border-radius: 5px;
-            font-size: 16px;
             cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
             transition: background-color 0.3s;
+            display: inline-block;
+            margin: 5px;
         }
-
-        .analyze-btn:hover {
-            background-color: #219653;
+        
+        .btn:hover {
+            background-color: var(--primary-color);
         }
-
-        .analyze-btn:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
+        
+        .btn-success {
+            background-color: var(--success-color);
         }
-
-        .results-section {
-            display: none;
-            margin-top: 30px;
+        
+        .btn-success:hover {
+            background-color: #27ae60;
         }
-
-        .results-section h2 {
-            color: var(--primary);
-            margin-bottom: 20px;
-            text-align: center;
+        
+        .btn-danger {
+            background-color: var(--accent-color);
         }
-
-        .results-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 30px;
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
         }
-
-        .common, .different, .doubtful {
-            flex: 1;
-            min-width: 300px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            max-height: 500px;
-            overflow-y: auto;
+        
+        .btn-warning {
+            background-color: var(--warning-color);
         }
-
-        .common h3, .different h3, .doubtful h3 {
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid;
-            position: sticky;
-            top: 0;
-            background-color: #f8f9fa;
-            z-index: 1;
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
         }
-
-        .common h3 {
-            color: var(--success);
-            border-color: var(--success);
+        
+        .file-list {
+            margin-top: 20px;
         }
-
-        .different h3 {
-            color: var(--danger);
-            border-color: var(--danger);
-        }
-
-        .doubtful h3 {
-            color: var(--warning);
-            border-color: var(--warning);
-        }
-
-        .result-item {
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        
+        .file-item {
             display: flex;
             justify-content: space-between;
-        }
-
-        .result-details {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-
-        .download-btn {
-            display: block;
-            width: 250px;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #9b59b6;
-            color: white;
-            border: none;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: var(--light-color);
             border-radius: 5px;
-            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .file-name {
+            font-weight: 600;
+        }
+        
+        .file-size {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .config-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .config-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .column-selection-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            margin-top: 10px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .checkbox-group:hover {
+            background-color: #eef5ff;
+        }
+        
+        .checkbox-group input {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+        
+        .select-all-container {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-section {
+            display: none;
+        }
+        
+        .results-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .results-tab {
+            padding: 12px 25px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            background-color: #f2f2f2;
+            font-weight: 600;
+            transition: all 0.3s;
         }
-
-        .download-btn:hover {
-            background-color: #8e44ad;
+        
+        .results-tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom: 2px solid white;
+            margin-bottom: -2px;
+            color: var(--primary-color);
         }
-
+        
+        .results-tab:hover:not(.active) {
+            background-color: #e9e9e9;
+        }
+        
+        .results-container {
+            display: none;
+        }
+        
+        .results-container.active {
+            display: block;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .results-table th, .results-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-table th {
+            background-color: var(--primary-color);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f1f8ff;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--secondary-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
         .loading {
             display: none;
             text-align: center;
-            margin: 20px 0;
+            padding: 20px;
         }
-
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background-color: #e0e0e0;
-            border-radius: 4px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: var(--secondary);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
+        
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left: 4px solid var(--secondary);
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--secondary-color);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
+            margin: 0 auto 15px;
         }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .summary {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
+        
+        .match-row {
+            background-color: rgba(46, 204, 113, 0.1);
         }
-
-        .summary-item {
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        
+        .only-in-file1 {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .only-in-file2 {
+            background-color: rgba(241, 196, 15, 0.1);
+        }
+        
+        .no-results {
             text-align: center;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .summary-number {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .summary-label {
-            font-size: 14px;
+            padding: 30px;
             color: #7f8c8d;
         }
-
-        .only-in-file1 {
-            border-left: 4px solid var(--warning);
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
         }
 
-        .only-in-file2 {
-            border-left: 4px solid var(--danger);
+        .column-info {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 5px;
         }
 
-        .matches {
-            border-left: 4px solid var(--success);
+        .file-preview {
+            margin-top: 20px;
+            overflow-x: auto;
         }
-
-        .doubtful-matches {
-            border-left: 4px solid var(--warning);
-        }
-
-        .filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .filter-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .filter-group input, .filter-group select {
+        
+        .preview-table {
             width: 100%;
-            padding: 8px;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        .preview-table th, .preview-table td {
+            padding: 8px 10px;
+            text-align: left;
             border: 1px solid #ddd;
+        }
+        
+        .preview-table th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        
+        .preview-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .file-tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .file-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            background-color: #f2f2f2;
+        }
+        
+        .file-tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        
+        .preview-container {
+            display: none;
+        }
+        
+        .preview-container.active {
+            display: block;
+        }
+        
+        .column-tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .column-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            background-color: #f2f2f2;
+        }
+        
+        .column-tab.active {
+            background-color: white;
+            border-color: #ddd;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        
+        .column-container {
+            display: none;
+        }
+        
+        .column-container.active {
+            display: block;
+        }
+        
+        .comparison-info {
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            margin-bottom: 20px;
             border-radius: 4px;
         }
-
+        
         .error-message {
-            background-color: #ffe6e6;
-            color: var(--danger);
+            background-color: #ffeaa7;
+            border-left: 4px solid #fdcb6e;
             padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
+            margin: 10px 0;
+            border-radius: 4px;
             display: none;
         }
-
-        .success-message {
-            background-color: #e6ffe6;
-            color: var(--success);
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            display: none;
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
-
-        .debug-info {
-            background-color: #f8f9fa;
+        
+        .stat-card {
+            background: white;
             border-radius: 8px;
             padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .stat-card.match {
+            border-left-color: var(--success-color);
+        }
+        
+        .stat-card.file1-only {
+            border-left-color: var(--secondary-color);
+        }
+        
+        .stat-card.file2-only {
+            border-left-color: var(--warning-color);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .export-buttons {
             margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .debug-info {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
             font-family: monospace;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
+            font-size: 0.8rem;
             display: none;
         }
 
-        .debug-toggle {
-            color: var(--secondary);
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: 10px;
-            display: inline-block;
+        .high-similarity {
+            color: var(--success-color);
+            font-weight: bold;
         }
 
-        @media (max-width: 768px) {
-            .upload-section {
-                flex-direction: column;
-            }
-            
-            .file-upload {
-                width: 100%;
-            }
-            
-            .results-container {
-                flex-direction: column;
-            }
-
-            .filters {
-                flex-direction: column;
-            }
+        .comparison-row {
+            border-left: 4px solid var(--success-color);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>AnalisadorExcel</h1>
-            <p class="description">Faça upload de dois arquivos Excel com dados de pagamentos para identificar correspondências mesmo com diferenças de formatação e gere um relatório detalhado.</p>
+            <h1>Comparador de Arquivos Excel</h1>
+            <p class="subtitle">Encontre semelhanças entre arquivos Excel, mesmo em linhas e colunas diferentes</p>
         </header>
-
-        <div id="error-message" class="error-message"></div>
-        <div id="success-message" class="success-message"></div>
-
-        <div class="upload-section">
-            <div class="file-upload">
-                <h3>Arquivo 1</h3>
-                <label for="file1" class="file-label">Selecionar Arquivo</label>
-                <input type="file" id="file1" class="file-input" accept=".xlsx, .xls">
-                <div id="file1-name" class="file-name">Nenhum arquivo selecionado</div>
-                <div id="file1-error" class="file-error"></div>
+        
+        <div class="error-message" id="errorMessage"></div>
+        
+        <div class="card">
+            <h2 class="card-title">Upload de Arquivos</h2>
+            <div class="upload-area" id="uploadArea">
+                <p>Arraste e solte seus arquivos Excel aqui ou</p>
+                <button class="btn" id="browseBtn">Selecionar Arquivos</button>
+                <input type="file" id="fileInput" class="file-input" multiple accept=".xlsx, .xls">
+                <p class="file-types">Formatos suportados: .xlsx, .xls</p>
             </div>
-
-            <div class="file-upload">
-                <h3>Arquivo 2</h3>
-                <label for="file2" class="file-label">Selecionar Arquivo</label>
-                <input type="file" id="file2" class="file-input" accept=".xlsx, .xls">
-                <div id="file2-name" class="file-name">Nenhum arquivo selecionado</div>
-                <div id="file2-error" class="file-error"></div>
+            
+            <div class="file-list" id="fileList"></div>
+            
+            <button class="btn btn-danger" id="clearFiles" style="display: none;">Limpar Arquivos</button>
+            
+            <div class="file-preview" id="filePreview" style="display: none;">
+                <h3>Pré-visualização dos Arquivos</h3>
+                <div class="file-tabs" id="fileTabs"></div>
+                <div id="previewContainers"></div>
             </div>
         </div>
-
-        <div class="config-section">
-            <h3>Configurações de Comparação</h3>
+        
+        <div class="card" id="configCard" style="display: none;">
+            <h2 class="card-title">Configurações de Comparação</h2>
             
-            <div class="config-tabs">
-                <div class="config-tab active" data-tab="file1">Configurações Arquivo 1</div>
-                <div class="config-tab" data-tab="file2">Configurações Arquivo 2</div>
-                <div class="config-tab" data-tab="global">Configurações Globais</div>
+            <div class="comparison-info">
+                <p><strong>Como funciona:</strong> Selecione as colunas que deseja comparar em cada arquivo. 
+                O sistema irá comparar os <strong>conjuntos de valores</strong> das colunas selecionadas entre todos os arquivos, 
+                independente da ordem das colunas.</p>
+                <p><strong>Filtro automático:</strong> Apenas correspondências com 80% ou mais de similaridade serão consideradas.</p>
             </div>
             
-            <div class="config-content active" id="file1-config">
-                <div class="config-options">
-                    <div class="config-group">
-                        <label for="file1-coluna1">Coluna de Comparação 01:</label>
-                        <select id="file1-coluna1">
-                            <option value="">Selecionar coluna</option>
-                        </select>
-                        <div id="file1-coluna1-error" class="config-error">Selecione uma coluna para Comparação 01</div>
-                    </div>
-                    <div class="config-group">
-                        <label for="file1-coluna2">Coluna de Comparação 02:</label>
-                        <select id="file1-coluna2">
-                            <option value="">Selecionar coluna</option>
-                        </select>
-                        <div id="file1-coluna2-error" class="config-error">Selecione uma coluna para Comparação 02</div>
-                    </div>
-                    <div class="config-group">
-                        <label for="file1-coluna3">Coluna de Comparação 03:</label>
-                        <select id="file1-coluna3">
-                            <option value="">Selecionar coluna</option>
-                        </select>
-                    </div>
-                    <div class="config-group">
-                        <label for="file1-coluna4">Coluna de Comparação 04:</label>
-                        <select id="file1-coluna4">
-                            <option value="">Selecionar coluna</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="config-content" id="file2-config">
-                <div class="config-options">
-                    <div class="config-group">
-                        <label for="file2-coluna1">Coluna de Comparação 01:</label>
-                        <select id="file2-coluna1">
-                            <option value="">Selecionar coluna</option>
-                        </select>
-                        <div id="file2-coluna1-error" class="config-error">Selecione uma coluna para Comparação 01</div>
-                    </div>
-                    <div class="config-group">
-                        <label for="file2-coluna2">Coluna de Comparação 02:</label>
-                        <select id="file2-coluna2">
-                            <option value="">Selecionar coluna</option>
-                        </select>
-                        <div id="file2-coluna2-error" class="config-error">Selecione uma coluna para Comparação 02</div>
-                    </div>
-                    <div class="config-group">
-                        <label for="file2-coluna3">Coluna de Comparação 03:</label>
-                        <select id="file2-coluna3">
-                            <option value="">Selecionar coluna</option>
-                        </select>
-                    </div>
-                    <div class="config-group">
-                        <label for="file2-coluna4">Coluna de Comparação 04:</label>
-                        <select id="file2-coluna4">
-                            <option value="">Selecionar coluna</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="config-content" id="global-config">
-                <div class="config-options">
-                    <div class="config-group">
-                        <label for="tolerancia">Tolerância de valores:</label>
-                        <input type="number" id="tolerancia" value="0.01" step="0.01" min="0">
-                    </div>
-                    <div class="config-group">
-                        <label for="ignorar-caracteres">Ignorar caracteres especiais na Coluna 01:</label>
-                        <select id="ignorar-caracteres">
-                            <option value="sim" selected>Sim</option>
-                            <option value="nao">Não</option>
-                        </select>
-                    </div>
-                    <div class="config-group">
-                        <label for="comparar-coluna3">Comparar Coluna 03 (similaridade):</label>
-                        <select id="comparar-coluna3">
-                            <option value="sim" selected>Sim</option>
-                            <option value="nao">Não</option>
-                        </select>
-                    </div>
-                    <div class="config-group">
-                        <label for="tolerancia-duvidosos">Tolerância para correspondências duvidosas:</label>
-                        <input type="number" id="tolerancia-duvidosos" value="0.05" step="0.01" min="0">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <button id="analyze-btn" class="analyze-btn" disabled>Analisar Arquivos</button>
-
-        <div class="loading">
-            <div class="spinner"></div>
-            <p>Processando arquivos...</p>
-            <div class="progress-container">
-                <div class="progress-bar" id="progress-bar"></div>
-            </div>
-        </div>
-
-        <div id="results-section" class="results-section">
-            <h2>Resultados da Análise</h2>
-            
-            <div class="summary">
-                <div class="summary-item only-in-file1">
-                    <div class="summary-number" id="only-in-file1-count">0</div>
-                    <div class="summary-label">Apenas no Arquivo 1</div>
-                </div>
-                <div class="summary-item only-in-file2">
-                    <div class="summary-number" id="only-in-file2-count">0</div>
-                    <div class="summary-label">Apenas no Arquivo 2</div>
-                </div>
-                <div class="summary-item matches">
-                    <div class="summary-number" id="matches-count">0</div>
-                    <div class="summary-label">Correspondências</div>
-                </div>
-                <div class="summary-item doubtful-matches">
-                    <div class="summary-number" id="doubtful-count">0</div>
-                    <div class="summary-label">Correspondências Duvidosas</div>
-                </div>
-            </div>
-            
-            <div class="filters">
-                <div class="filter-group">
-                    <label for="filter-coluna1">Filtrar por Coluna 01:</label>
-                    <input type="text" id="filter-coluna1" placeholder="Digite o valor...">
-                </div>
-                <div class="filter-group">
-                    <label for="filter-coluna3">Filtrar por Coluna 03:</label>
-                    <input type="text" id="filter-coluna3" placeholder="Digite o valor...">
-                </div>
-                <div class="filter-group">
-                    <label for="filter-status">Filtrar por Status:</label>
-                    <select id="filter-status">
-                        <option value="todos">Todos</option>
-                        <option value="apenas-arquivo1">Apenas no Arquivo 1</option>
-                        <option value="apenas-arquivo2">Apenas no Arquivo 2</option>
-                        <option value="correspondentes">Correspondentes</option>
-                        <option value="duvidosos">Correspondências Duvidosas</option>
+            <div class="config-section">
+                <div class="form-group">
+                    <label for="searchType">Tipo de Busca</label>
+                    <select id="searchType">
+                        <option value="exact">Busca Exata</option>
+                        <option value="similar" selected>Busca por Similaridade</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="results-container">
-                <div class="common">
-                    <h3>Correspondências Encontradas</h3>
-                    <div id="common-results"></div>
-                </div>
-                <div class="doubtful">
-                    <h3>Correspondências Duvidosas</h3>
-                    <div id="doubtful-results"></div>
-                </div>
-                <div class="different">
-                    <h3>Divergências</h3>
-                    <div id="different-results"></div>
+                
+                <div class="form-group">
+                    <label for="similarityThreshold">Limiar de Similaridade Mínima (%)</label>
+                    <input type="number" id="similarityThreshold" min="80" max="100" value="80">
+                    <small style="color: #666;">Mínimo: 80% (apenas alta correspondência)</small>
                 </div>
             </div>
             
-            <button id="download-btn" class="download-btn">Baixar Relatório Completo</button>
+            <div class="form-group">
+                <label>Seleção de Colunas por Arquivo</label>
+                <div class="column-tabs" id="columnTabs"></div>
+                <div id="columnContainers"></div>
+                <p class="column-info">Selecione as colunas que deseja comparar em cada arquivo.</p>
+            </div>
             
-            <div class="debug-toggle" id="debug-toggle">Mostrar informações de depuração</div>
-            <div class="debug-info" id="debug-info"></div>
+            <button class="btn btn-success" id="compareBtn">Iniciar Comparação</button>
+        </div>
+        
+        <div class="loading" id="loadingSection">
+            <div class="spinner"></div>
+            <p>Processando arquivos e encontrando semelhanças...</p>
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <div class="card results-section" id="resultsSection">
+            <h2 class="card-title">Resultados da Comparação</h2>
+            
+            <div class="summary-stats" id="summaryStats"></div>
+            
+            <div class="results-tabs" id="resultsTabs">
+                <div class="results-tab active" data-tab="matches">Correspondências (80%+)</div>
+                <div class="results-tab" data-tab="file1-only">Apenas no Arquivo 1</div>
+                <div class="results-tab" data-tab="file2-only">Apenas no Arquivo 2</div>
+            </div>
+            
+            <div id="resultsContainers">
+                <div class="results-container active" id="matches-container"></div>
+                <div class="results-container" id="file1-only-container"></div>
+                <div class="results-container" id="file2-only-container"></div>
+            </div>
+            
+            <div class="export-buttons">
+                <button class="btn btn-success" id="exportMatchesBtn" style="display: none;">Exportar Correspondências</button>
+                <button class="btn btn-warning" id="exportFile1OnlyBtn" style="display: none;">Exportar Apenas Arquivo 1</button>
+                <button class="btn btn-warning" id="exportFile2OnlyBtn" style="display: none;">Exportar Apenas Arquivo 2</button>
+                <button class="btn" id="exportAllBtn" style="display: none;">Exportar Relatório Completo</button>
+            </div>
         </div>
     </div>
+    
+    <footer>
+        <p>Comparador de Arquivos Excel &copy; 2023 - Encontre semelhanças entre seus dados</p>
+    </footer>
 
     <script>
         // Variáveis globais
-        let file1Data = null;
-        let file2Data = null;
-        let file1Columns = [];
-        let file2Columns = [];
-        let results = null;
-        let file1Name = '';
-        let file2Name = '';
-
-        // Elementos DOM
-        const file1Input = document.getElementById('file1');
-        const file2Input = document.getElementById('file2');
-        const file1NameDisplay = document.getElementById('file1-name');
-        const file2NameDisplay = document.getElementById('file2-name');
-        const file1Error = document.getElementById('file1-error');
-        const file2Error = document.getElementById('file2-error');
-        const analyzeBtn = document.getElementById('analyze-btn');
-        const loadingSection = document.querySelector('.loading');
-        const resultsSection = document.getElementById('results-section');
-        const commonResults = document.getElementById('common-results');
-        const doubtfulResults = document.getElementById('doubtful-results');
-        const differentResults = document.getElementById('different-results');
-        const downloadBtn = document.getElementById('download-btn');
-        const errorMessage = document.getElementById('error-message');
-        const successMessage = document.getElementById('success-message');
-        const debugToggle = document.getElementById('debug-toggle');
-        const debugInfo = document.getElementById('debug-info');
-        const progressBar = document.getElementById('progress-bar');
-        const configTabs = document.querySelectorAll('.config-tab');
-
-        // Event Listeners
-        file1Input.addEventListener('change', (e) => handleFileUpload(e, 1));
-        file2Input.addEventListener('change', (e) => handleFileUpload(e, 2));
-        analyzeBtn.addEventListener('click', analyzeFiles);
-        downloadBtn.addEventListener('click', downloadReport);
-        debugToggle.addEventListener('click', toggleDebugInfo);
+        let uploadedFiles = [];
+        let fileData = [];
+        let selectedColumnsByFile = {};
+        let comparisonResults = {};
         
-        // Adicionar event listeners para as abas de configuração
-        configTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                
-                // Remover classe active de todas as abas e conteúdos
-                configTabs.forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.config-content').forEach(c => c.classList.remove('active'));
-                
-                // Adicionar classe active à aba e conteúdo clicados
-                tab.classList.add('active');
-                document.getElementById(`${tabId}-config`).classList.add('active');
-            });
+        // Elementos DOM
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const fileList = document.getElementById('fileList');
+        const filePreview = document.getElementById('filePreview');
+        const fileTabs = document.getElementById('fileTabs');
+        const previewContainers = document.getElementById('previewContainers');
+        const clearFilesBtn = document.getElementById('clearFiles');
+        const configCard = document.getElementById('configCard');
+        const columnTabs = document.getElementById('columnTabs');
+        const columnContainers = document.getElementById('columnContainers');
+        const searchType = document.getElementById('searchType');
+        const similarityThreshold = document.getElementById('similarityThreshold');
+        const compareBtn = document.getElementById('compareBtn');
+        const loadingSection = document.getElementById('loadingSection');
+        const progressBar = document.getElementById('progressBar');
+        const resultsSection = document.getElementById('resultsSection');
+        const summaryStats = document.getElementById('summaryStats');
+        const resultsTabs = document.getElementById('resultsTabs');
+        const matchesContainer = document.getElementById('matches-container');
+        const file1OnlyContainer = document.getElementById('file1-only-container');
+        const file2OnlyContainer = document.getElementById('file2-only-container');
+        const exportAllBtn = document.getElementById('exportAllBtn');
+        const exportMatchesBtn = document.getElementById('exportMatchesBtn');
+        const exportFile1OnlyBtn = document.getElementById('exportFile1OnlyBtn');
+        const exportFile2OnlyBtn = document.getElementById('exportFile2OnlyBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        // Event Listeners
+        browseBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        clearFilesBtn.addEventListener('click', clearFiles);
+        searchType.addEventListener('change', toggleSimilarityThreshold);
+        compareBtn.addEventListener('click', startComparison);
+        
+        // Drag and Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
         });
-
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
         // Funções
-        function handleFileUpload(event, fileNumber) {
-            const file = event.target.files[0];
-            const fileNameElement = document.getElementById(`file${fileNumber}-name`);
-            const fileErrorElement = document.getElementById(`file${fileNumber}-error`);
-            
-            if (!file) return;
-            
-            // Salvar o nome do arquivo
-            if (fileNumber === 1) {
-                file1Name = file.name;
-            } else {
-                file2Name = file.name;
-            }
-            
-            // Verificar se é um arquivo Excel
-            if (!file.name.match(/\.(xlsx|xls)$/)) {
-                fileErrorElement.textContent = 'Por favor, selecione um arquivo Excel válido.';
-                fileErrorElement.style.display = 'block';
-                fileNameElement.textContent = 'Arquivo inválido';
-                event.target.value = '';
-                updateAnalyzeButton();
-                return;
-            }
-            
-            fileErrorElement.style.display = 'none';
-            fileNameElement.textContent = file.name;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    
-                    // Pegar a primeira planilha
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    
-                    // Converter para JSON
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-                    
-                    // Extrair cabeçalhos (primeira linha)
-                    const headers = jsonData[0];
-                    
-                    // Salvar dados e cabeçalhos
-                    if (fileNumber === 1) {
-                        file1Data = jsonData;
-                        file1Columns = headers;
-                        populateColumnDropdown('file1', headers);
-                    } else {
-                        file2Data = jsonData;
-                        file2Columns = headers;
-                        populateColumnDropdown('file2', headers);
-                    }
-                    
-                    updateAnalyzeButton();
-                    showSuccess(`Arquivo ${fileNumber} carregado com sucesso!`);
-                } catch (error) {
-                    console.error('Erro ao processar arquivo:', error);
-                    fileErrorElement.textContent = 'Erro ao processar o arquivo. Verifique se é um Excel válido.';
-                    fileErrorElement.style.display = 'block';
-                    fileNameElement.textContent = 'Erro no processamento';
-                }
-            };
-            
-            reader.onerror = function() {
-                fileErrorElement.textContent = 'Erro ao ler o arquivo.';
-                fileErrorElement.style.display = 'block';
-                fileNameElement.textContent = 'Erro de leitura';
-            };
-            
-            reader.readAsArrayBuffer(file);
+        function handleFileSelect(e) {
+            handleFiles(e.target.files);
         }
-
-        function populateColumnDropdown(filePrefix, headers) {
-            // Limpar dropdowns existentes
-            const dropdowns = [
-                `${filePrefix}-coluna1`,
-                `${filePrefix}-coluna2`,
-                `${filePrefix}-coluna3`,
-                `${filePrefix}-coluna4`
-            ];
+        
+        function handleFiles(files) {
+            if (files.length === 0) return;
             
-            dropdowns.forEach(dropdownId => {
-                const dropdown = document.getElementById(dropdownId);
-                // Manter a primeira opção e limpar o resto
-                dropdown.innerHTML = '<option value="">Selecionar coluna</option>';
+            errorMessage.style.display = 'none';
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
                 
-                // Adicionar opções para cada cabeçalho
-                headers.forEach((header, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = `${header} (Coluna ${index + 1})`;
-                    dropdown.appendChild(option);
-                });
-            });
-        }
-
-        function updateAnalyzeButton() {
-            // Habilitar o botão apenas se ambos os arquivos foram carregados
-            const file1Loaded = file1Data !== null;
-            const file2Loaded = file2Data !== null;
+                if (!file.name.match(/\.(xlsx|xls)$/)) {
+                    showError(`O arquivo "${file.name}" não é um arquivo Excel válido.`);
+                    continue;
+                }
+                
+                if (uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    showError(`O arquivo "${file.name}" já foi adicionado.`);
+                    continue;
+                }
+                
+                uploadedFiles.push(file);
+                addFileToList(file);
+            }
             
-            analyzeBtn.disabled = !(file1Loaded && file2Loaded);
+            if (uploadedFiles.length > 0) {
+                clearFilesBtn.style.display = 'inline-block';
+                configCard.style.display = 'block';
+            }
+            
+            fileInput.value = '';
+            processFilesForColumns();
         }
-
+        
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
-            successMessage.style.display = 'none';
-            
-            // Rolar para a mensagem de erro
-            errorMessage.scrollIntoView({ behavior: 'smooth' });
         }
-
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
+        
+        function addFileToList(file) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            
+            const fileInfo = document.createElement('div');
+            fileInfo.innerHTML = `
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+            `;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn btn-danger';
+            removeBtn.textContent = 'Remover';
+            removeBtn.addEventListener('click', () => removeFile(file));
+            
+            fileItem.appendChild(fileInfo);
+            fileItem.appendChild(removeBtn);
+            fileList.appendChild(fileItem);
+        }
+        
+        function removeFile(fileToRemove) {
+            uploadedFiles = uploadedFiles.filter(file => file !== fileToRemove);
+            fileList.innerHTML = '';
+            
+            uploadedFiles.forEach(file => addFileToList(file));
+            
+            if (uploadedFiles.length === 0) {
+                clearFilesBtn.style.display = 'none';
+                configCard.style.display = 'none';
+                filePreview.style.display = 'none';
+            } else {
+                processFilesForColumns();
+            }
+        }
+        
+        function clearFiles() {
+            uploadedFiles = [];
+            fileList.innerHTML = '';
+            clearFilesBtn.style.display = 'none';
+            configCard.style.display = 'none';
+            filePreview.style.display = 'none';
+            resultsSection.style.display = 'none';
+            selectedColumnsByFile = {};
             errorMessage.style.display = 'none';
         }
-
-        function hideMessages() {
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
-
-        function analyzeFiles() {
-            // Validar seleção de colunas
-            const file1Coluna1 = document.getElementById('file1-coluna1').value;
-            const file1Coluna2 = document.getElementById('file1-coluna2').value;
-            const file2Coluna1 = document.getElementById('file2-coluna1').value;
-            const file2Coluna2 = document.getElementById('file2-coluna2').value;
+        
+        function toggleSimilarityThreshold() {
+            similarityThreshold.disabled = searchType.value === 'exact';
+        }
+        
+        function processFilesForColumns() {
+            if (uploadedFiles.length === 0) return;
             
-            if (file1Coluna1 === '' || file1Coluna2 === '' || file2Coluna1 === '' || file2Coluna2 === '') {
-                showError('Por favor, selecione as colunas obrigatórias (Comparação 01 e 02) para ambos os arquivos.');
+            fileData = [];
+            let processedCount = 0;
+            
+            fileTabs.innerHTML = '';
+            previewContainers.innerHTML = '';
+            filePreview.style.display = 'block';
+            
+            columnTabs.innerHTML = '';
+            columnContainers.innerHTML = '';
+            selectedColumnsByFile = {};
+            
+            uploadedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        const fileInfo = {
+                            name: file.name,
+                            data: jsonData,
+                            headers: jsonData[0] || []
+                        };
+                        
+                        fileData.push(fileInfo);
+                        addFilePreview(file.name, jsonData, index);
+                        addColumnSelection(file.name, fileInfo.headers, index);
+                        
+                        processedCount++;
+                        
+                        if (processedCount === uploadedFiles.length) {
+                            activateTab(0);
+                            activateColumnTab(0);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao processar arquivo:', error);
+                        showError(`Erro ao processar o arquivo "${file.name}". Verifique se é um arquivo Excel válido.`);
+                    }
+                };
+                
+                reader.onerror = function() {
+                    showError(`Erro ao ler o arquivo: ${file.name}`);
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        function addFilePreview(fileName, data, index) {
+            const tab = document.createElement('div');
+            tab.className = 'file-tab';
+            tab.textContent = fileName;
+            tab.dataset.index = index;
+            tab.addEventListener('click', () => activateTab(index));
+            fileTabs.appendChild(tab);
+            
+            const container = document.createElement('div');
+            container.className = 'preview-container';
+            container.id = `preview-${index}`;
+            
+            let tableHTML = `<table class="preview-table"><thead><tr>`;
+            
+            if (data.length > 0 && data[0]) {
+                data[0].forEach(header => {
+                    tableHTML += `<th>${header || ''}</th>`;
+                });
+                tableHTML += `</tr></thead><tbody>`;
+                
+                const rowCount = Math.min(data.length, 11);
+                for (let i = 1; i < rowCount; i++) {
+                    if (data[i]) {
+                        tableHTML += `<tr>`;
+                        data[i].forEach(cell => {
+                            tableHTML += `<td>${cell || ''}</td>`;
+                        });
+                        tableHTML += `</tr>`;
+                    }
+                }
+                
+                tableHTML += `</tbody></table>`;
+                
+                if (data.length > 10) {
+                    tableHTML += `<p style="margin-top: 10px; font-style: italic;">Mostrando 10 de ${data.length-1} linhas</p>`;
+                }
+            } else {
+                tableHTML = '<p>Arquivo vazio ou sem dados</p>';
+            }
+            
+            container.innerHTML = tableHTML;
+            previewContainers.appendChild(container);
+        }
+        
+        function addColumnSelection(fileName, headers, index) {
+            const tab = document.createElement('div');
+            tab.className = 'column-tab';
+            tab.textContent = fileName;
+            tab.dataset.index = index;
+            tab.addEventListener('click', () => activateColumnTab(index));
+            columnTabs.appendChild(tab);
+            
+            const container = document.createElement('div');
+            container.className = 'column-container';
+            container.id = `column-${index}`;
+            
+            const validHeaders = headers.filter(header => header && header.toString().trim() !== '');
+            
+            if (validHeaders.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 20px; color: #c0392b;">Nenhuma coluna válida encontrada neste arquivo.</p>';
+            } else {
+                const selectAllContainer = document.createElement('div');
+                selectAllContainer.className = 'select-all-container';
+                
+                const selectAllGroup = document.createElement('div');
+                selectAllGroup.className = 'checkbox-group';
+                
+                const selectAllCheckbox = document.createElement('input');
+                selectAllCheckbox.type = 'checkbox';
+                selectAllCheckbox.id = `select-all-${index}`;
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.addEventListener('change', function() {
+                    const container = document.getElementById(`column-${index}`);
+                    if (!container) return;
+                    
+                    const checkboxes = container.querySelectorAll('input[type="checkbox"]:not([id^="select-all-"])');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                    updateSelectedColumnsForFile(index);
+                });
+                
+                const selectAllLabel = document.createElement('label');
+                selectAllLabel.htmlFor = `select-all-${index}`;
+                selectAllLabel.textContent = 'Selecionar Todas as Colunas';
+                selectAllLabel.style.fontWeight = 'bold';
+                
+                selectAllGroup.appendChild(selectAllCheckbox);
+                selectAllGroup.appendChild(selectAllLabel);
+                selectAllContainer.appendChild(selectAllGroup);
+                container.appendChild(selectAllContainer);
+                
+                const columnsContainer = document.createElement('div');
+                columnsContainer.className = 'column-selection-container';
+                
+                validHeaders.forEach(header => {
+                    const checkboxGroup = document.createElement('div');
+                    checkboxGroup.className = 'checkbox-group';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `col-${index}-${header.replace(/\s+/g, '-')}`;
+                    checkbox.value = header;
+                    checkbox.checked = true;
+                    checkbox.addEventListener('change', () => updateSelectedColumnsForFile(index));
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `col-${index}-${header.replace(/\s+/g, '-')}`;
+                    label.textContent = header;
+                    
+                    checkboxGroup.appendChild(checkbox);
+                    checkboxGroup.appendChild(label);
+                    columnsContainer.appendChild(checkboxGroup);
+                });
+                
+                container.appendChild(columnsContainer);
+                updateSelectedColumnsForFile(index);
+            }
+            
+            columnContainers.appendChild(container);
+        }
+        
+        function activateTab(index) {
+            document.querySelectorAll('.file-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.preview-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            const tab = document.querySelector(`.file-tab[data-index="${index}"]`);
+            const container = document.getElementById(`preview-${index}`);
+            
+            if (tab) tab.classList.add('active');
+            if (container) container.classList.add('active');
+        }
+        
+        function activateColumnTab(index) {
+            document.querySelectorAll('.column-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.column-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            const tab = document.querySelector(`.column-tab[data-index="${index}"]`);
+            const container = document.getElementById(`column-${index}`);
+            
+            if (tab) tab.classList.add('active');
+            if (container) container.classList.add('active');
+        }
+        
+        function updateSelectedColumnsForFile(fileIndex) {
+            const container = document.getElementById(`column-${fileIndex}`);
+            if (!container) return;
+            
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]:not([id^="select-all-"])');
+            const selectedColumns = [];
+            
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedColumns.push(checkbox.value);
+                }
+            });
+            
+            selectedColumnsByFile[fileIndex] = selectedColumns;
+            
+            const selectAllCheckbox = document.getElementById(`select-all-${fileIndex}`);
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = selectedColumns.length === checkboxes.length;
+            }
+        }
+        
+        function startComparison() {
+            if (uploadedFiles.length < 2) {
+                showError('Por favor, faça upload de pelo menos 2 arquivos para comparar.');
                 return;
             }
             
-            hideMessages();
+            for (let i = 0; i < fileData.length; i++) {
+                if (!selectedColumnsByFile[i] || selectedColumnsByFile[i].length === 0) {
+                    showError(`Por favor, selecione pelo menos uma coluna no arquivo "${fileData[i].name}".`);
+                    activateColumnTab(i);
+                    return;
+                }
+            }
             
-            // Mostrar loading
             loadingSection.style.display = 'block';
-            analyzeBtn.disabled = true;
+            resultsSection.style.display = 'none';
             progressBar.style.width = '0%';
             
-            // Simular progresso (em um caso real, isso seria baseado no processamento real)
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += 5;
-                progressBar.style.width = `${progress}%`;
+            setTimeout(() => {
+                simulateProgress();
+            }, 500);
+        }
+        
+        function simulateProgress() {
+            let width = 0;
+            const interval = setInterval(() => {
+                width += 5;
+                progressBar.style.width = width + '%';
                 
-                if (progress >= 100) {
-                    clearInterval(progressInterval);
-                    processComparison();
+                if (width >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loadingSection.style.display = 'none';
+                        performComparison();
+                    }, 500);
                 }
             }, 100);
         }
-
-        function processComparison() {
-            try {
-                // Obter configurações
-                const file1Coluna1 = parseInt(document.getElementById('file1-coluna1').value);
-                const file1Coluna2 = parseInt(document.getElementById('file1-coluna2').value);
-                const file1Coluna3 = document.getElementById('file1-coluna3').value;
-                const file1Coluna4 = document.getElementById('file1-coluna4').value;
-                
-                const file2Coluna1 = parseInt(document.getElementById('file2-coluna1').value);
-                const file2Coluna2 = parseInt(document.getElementById('file2-coluna2').value);
-                const file2Coluna3 = document.getElementById('file2-coluna3').value;
-                const file2Coluna4 = document.getElementById('file2-coluna4').value;
-                
-                const tolerancia = parseFloat(document.getElementById('tolerancia').value);
-                const toleranciaDuvidosos = parseFloat(document.getElementById('tolerancia-duvidosos').value);
-                const ignorarCaracteres = document.getElementById('ignorar-caracteres').value === 'sim';
-                const compararColuna3 = document.getElementById('comparar-coluna3').value === 'sim';
-                
-                // Processar dados (ignorar cabeçalhos)
-                const processedFile1 = processData(file1Data, 1, file1Coluna1, file1Coluna2, file1Coluna3, file1Coluna4, ignorarCaracteres);
-                const processedFile2 = processData(file2Data, 2, file2Coluna1, file2Coluna2, file2Coluna3, file2Coluna4, ignorarCaracteres);
-                
-                // Comparar os dados
-                results = compareData(processedFile1, processedFile2, tolerancia, toleranciaDuvidosos, compararColuna3);
-                
-                // Exibir resultados
-                displayResults(results);
-                
-                // Esconder loading e mostrar resultados
-                loadingSection.style.display = 'none';
-                resultsSection.style.display = 'block';
-                
-                // Rolar para os resultados
-                resultsSection.scrollIntoView({ behavior: 'smooth' });
-                
-                showSuccess('Análise concluída com sucesso!');
-            } catch (error) {
-                console.error('Erro durante a análise:', error);
-                loadingSection.style.display = 'none';
-                showError('Ocorreu um erro durante a análise. Verifique os arquivos e tente novamente.');
-                analyzeBtn.disabled = false;
-            }
+        
+        function filterHighConfidenceMatches(matches, threshold = 0.8) {
+            return matches.filter(match => match.similarity >= threshold * 100);
         }
-
-        function processData(data, fileNumber, coluna1, coluna2, coluna3, coluna4, ignorarCaracteres) {
-            const processed = [];
+        
+        function performComparison() {
+            comparisonResults = {
+                exactMatches: [],
+                file1Only: [],
+                file2Only: []
+            };
             
-            // Ignorar a primeira linha (cabeçalhos)
-            for (let i = 1; i < data.length; i++) {
-                const row = data[i];
-                if (!row || row.length === 0) continue;
+            const isExactSearch = searchType.value === 'exact';
+            const threshold = parseInt(similarityThreshold.value) / 100;
+            
+            if (fileData.length >= 2) {
+                const file1 = fileData[0];
+                const file2 = fileData[1];
+                compareCompleteRows(file1, file2, isExactSearch, threshold);
+            }
+            
+            comparisonResults.exactMatches = filterHighConfidenceMatches(comparisonResults.exactMatches, 0.8);
+            
+            showResults();
+        }
+        
+        function compareCompleteRows(file1, file2, isExactSearch, threshold) {
+            const file1Rows = [];
+            const file2Rows = [];
+            
+            // Preparar linhas do arquivo 1
+            for (let row1 = 1; row1 < file1.data.length; row1++) {
+                if (!file1.data[row1]) continue;
                 
-                // Extrair valores das colunas selecionadas
-                let valorColuna1 = row[coluna1];
-                let valorColuna2 = row[coluna2];
-                let valorColuna3 = coluna3 !== '' ? row[coluna3] : '';
-                let valorColuna4 = coluna4 !== '' ? row[coluna4] : '';
+                const rowValues = [];
+                const rowData = {};
                 
-                // Processar Coluna 1
-                if (valorColuna1 !== undefined && valorColuna1 !== null) {
-                    valorColuna1 = valorColuna1.toString().trim();
-                    
-                    if (ignorarCaracteres) {
-                        // Remover caracteres não numéricos
-                        valorColuna1 = valorColuna1.replace(/\D/g, '');
+                selectedColumnsByFile[0].forEach(column => {
+                    const colIndex = file1.headers.indexOf(column);
+                    if (colIndex !== -1 && file1.data[row1][colIndex] !== undefined) {
+                        const value = file1.data[row1][colIndex];
+                        if (value !== null && value !== '' && value !== undefined) {
+                            rowValues.push(value.toString().trim());
+                            rowData[column] = value;
+                        }
                     }
-                    
-                    // Se após a limpeza a coluna estiver vazia, pular esta linha
-                    if (valorColuna1 === '') continue;
-                } else {
-                    continue; // Pular linhas sem valor na coluna 1
-                }
+                });
                 
-                // Processar Coluna 2
-                if (valorColuna2 !== undefined && valorColuna2 !== null) {
-                    // Converter para número, tratando diferentes formatos
-                    if (typeof valorColuna2 === 'string') {
-                        // Remover possíveis símbolos de moeda e espaços
-                        valorColuna2 = valorColuna2.replace(/[^\d,.-]/g, '').replace(',', '.');
-                    }
-                    valorColuna2 = parseFloat(valorColuna2);
-                    
-                    // Se não for um número válido, pular esta linha
-                    if (isNaN(valorColuna2)) continue;
-                } else {
-                    continue; // Pular linhas sem valor na coluna 2
-                }
-                
-                // Processar Coluna 3 (se fornecida)
-                if (valorColuna3 !== undefined && valorColuna3 !== null) {
-                    valorColuna3 = valorColuna3.toString().trim();
-                } else {
-                    valorColuna3 = '';
-                }
-                
-                // Processar Coluna 4 (se fornecida)
-                if (valorColuna4 !== undefined && valorColuna4 !== null) {
-                    valorColuna4 = valorColuna4.toString().trim();
-                } else {
-                    valorColuna4 = '';
-                }
-                
-                // Adicionar à lista processada
-                processed.push({
-                    file: fileNumber,
-                    originalRow: row,
-                    coluna1: valorColuna1,
-                    coluna2: valorColuna2,
-                    coluna3: valorColuna3,
-                    coluna4: valorColuna4
+                file1Rows.push({
+                    rowIndex: row1,
+                    values: rowValues,
+                    rowData: rowData,
+                    fullRow: file1.data[row1]
                 });
             }
             
-            return processed;
-        }
-
-        function compareData(data1, data2, tolerancia, toleranciaDuvidosos, compararColuna3) {
-            const matches = [];
-            const doubtfulMatches = [];
-            const onlyInFile1 = [];
-            const onlyInFile2 = [...data2];
-            
-            // Para cada item no arquivo 1, verificar se existe correspondência no arquivo 2
-            for (const item1 of data1) {
-                let foundMatch = false;
-                let foundDoubtfulMatch = false;
+            // Preparar linhas do arquivo 2
+            for (let row2 = 1; row2 < file2.data.length; row2++) {
+                if (!file2.data[row2]) continue;
                 
-                for (let j = 0; j < onlyInFile2.length; j++) {
-                    const item2 = onlyInFile2[j];
+                const rowValues = [];
+                const rowData = {};
+                
+                selectedColumnsByFile[1].forEach(column => {
+                    const colIndex = file2.headers.indexOf(column);
+                    if (colIndex !== -1 && file2.data[row2][colIndex] !== undefined) {
+                        const value = file2.data[row2][colIndex];
+                        if (value !== null && value !== '' && value !== undefined) {
+                            rowValues.push(value.toString().trim());
+                            rowData[column] = value;
+                        }
+                    }
+                });
+                
+                file2Rows.push({
+                    rowIndex: row2,
+                    values: rowValues,
+                    rowData: rowData,
+                    fullRow: file2.data[row2]
+                });
+            }
+            
+            const matchedFile2Rows = new Set();
+            
+            file1Rows.forEach((row1, row1Index) => {
+                let bestMatch = null;
+                let bestSimilarity = 0;
+                
+                file2Rows.forEach((row2, row2Index) => {
+                    if (matchedFile2Rows.has(row2Index)) return;
                     
-                    // Verificar se as Colunas 1 correspondem
-                    if (item1.coluna1 === item2.coluna1) {
-                        // Verificar se os valores da Coluna 2 estão dentro da tolerância
-                        const diff = Math.abs(item1.coluna2 - item2.coluna2);
-                        
-                        if (diff <= tolerancia) {
-                            // Verificar Coluna 3 se necessário
-                            let coluna3Match = true;
-                            if (compararColuna3 && item1.coluna3 && item2.coluna3) {
-                                coluna3Match = areValuesSimilar(item1.coluna3, item2.coluna3);
-                            }
-                            
-                            if (coluna3Match) {
-                                // Encontrou uma correspondência
-                                matches.push({
-                                    item1: item1,
-                                    item2: item2,
-                                    diff: diff
-                                });
-                                
-                                // Remover do array onlyInFile2
-                                onlyInFile2.splice(j, 1);
-                                foundMatch = true;
-                                break;
-                            }
-                        } else if (diff <= toleranciaDuvidosos) {
-                            // Verificar Coluna 3 se necessário
-                            let coluna3Match = true;
-                            if (compararColuna3 && item1.coluna3 && item2.coluna3) {
-                                coluna3Match = areValuesSimilar(item1.coluna3, item2.coluna3);
-                            }
-                            
-                            if (coluna3Match) {
-                                // Encontrou uma correspondência duvidosa
-                                doubtfulMatches.push({
-                                    item1: item1,
-                                    item2: item2,
-                                    diff: diff
-                                });
-                                
-                                // Remover do array onlyInFile2
-                                onlyInFile2.splice(j, 1);
-                                foundDoubtfulMatch = true;
-                                break;
-                            }
+                    const similarity = calculateSetSimilarity(row1.values, row2.values, isExactSearch);
+                    
+                    if (similarity >= 0.8 && similarity > bestSimilarity) {
+                        bestSimilarity = similarity;
+                        bestMatch = { 
+                            row2, 
+                            row2Index,
+                            similarity: similarity
+                        };
+                    }
+                });
+                
+                if (bestMatch && bestSimilarity >= 0.8) {
+                    comparisonResults.exactMatches.push({
+                        file1: file1.name,
+                        row1: row1.rowIndex,
+                        file2: file2.name,
+                        row2: bestMatch.row2.rowIndex,
+                        similarity: Math.round(bestMatch.similarity * 100),
+                        row1Data: row1.rowData,
+                        row2Data: bestMatch.row2.rowData,
+                        fullRow1: row1.fullRow,
+                        fullRow2: bestMatch.row2.fullRow
+                    });
+                    
+                    matchedFile2Rows.add(bestMatch.row2Index);
+                } else {
+                    comparisonResults.file1Only.push({
+                        file: file1.name,
+                        row: row1.rowIndex,
+                        rowData: row1.rowData,
+                        fullRow: row1.fullRow
+                    });
+                }
+            });
+            
+            file2Rows.forEach((row2, row2Index) => {
+                if (!matchedFile2Rows.has(row2Index)) {
+                    comparisonResults.file2Only.push({
+                        file: file2.name,
+                        row: row2.rowIndex,
+                        rowData: row2.rowData,
+                        fullRow: row2.fullRow
+                    });
+                }
+            });
+        }
+        
+        function calculateSetSimilarity(values1, values2, isExactSearch) {
+            if (values1.length === 0 && values2.length === 0) return 1;
+            if (values1.length === 0 || values2.length === 0) return 0;
+            
+            let totalSimilarity = 0;
+            let matchesFound = 0;
+            const usedIndexes = new Set();
+            
+            values1.forEach(val1 => {
+                let bestSimilarity = 0;
+                let bestIndex = -1;
+                
+                values2.forEach((val2, index) => {
+                    if (usedIndexes.has(index)) return;
+                    
+                    let similarity = 0;
+                    if (isExactSearch) {
+                        similarity = val1 === val2 ? 1 : 0;
+                    } else {
+                        similarity = calculateSimilarity(val1, val2);
+                    }
+                    
+                    if (similarity > bestSimilarity) {
+                        bestSimilarity = similarity;
+                        bestIndex = index;
+                    }
+                });
+                
+                if (bestIndex !== -1 && bestSimilarity > 0) {
+                    totalSimilarity += bestSimilarity;
+                    matchesFound++;
+                    usedIndexes.add(bestIndex);
+                }
+            });
+            
+            const maxPossibleMatches = Math.max(values1.length, values2.length);
+            return matchesFound > 0 ? totalSimilarity / maxPossibleMatches : 0;
+        }
+        
+        function calculateSimilarity(str1, str2) {
+            // Primeiro, tenta comparar como números (para casos como "107482" e "00107482")
+            const num1 = parseFloat(str1.replace(/[^\d.,]/g, '').replace(',', '.'));
+            const num2 = parseFloat(str2.replace(/[^\d.,]/g, '').replace(',', '.'));
+            
+            if (!isNaN(num1) && !isNaN(num2)) {
+                // Se ambos são números válidos, compara os valores numéricos
+                if (num1 === num2) return 1;
+                // Se são números próximos (dentro de uma pequena margem)
+                if (Math.abs(num1 - num2) < 0.0001) return 1;
+            }
+            
+            // Remove zeros à esquerda e compara como string
+            const cleanStr1 = str1.replace(/^0+/, '');
+            const cleanStr2 = str2.replace(/^0+/, '');
+            
+            if (cleanStr1 === cleanStr2) return 1;
+            
+            const normalize = (str) => {
+                if (!str) return '';
+                return str.toString().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+            };
+            
+            const normStr1 = normalize(str1);
+            const normStr2 = normalize(str2);
+            
+            if (normStr1 === normStr2) return 1;
+            
+            if (normStr1.includes(normStr2) || normStr2.includes(normStr1)) {
+                const longer = Math.max(normStr1.length, normStr2.length);
+                const shorter = Math.min(normStr1.length, normStr2.length);
+                return shorter / longer;
+            }
+            
+            const levenshteinDistance = (s1, s2) => {
+                const matrix = [];
+                
+                for (let i = 0; i <= s2.length; i++) {
+                    matrix[i] = [i];
+                }
+                
+                for (let j = 0; j <= s1.length; j++) {
+                    matrix[0][j] = j;
+                }
+                
+                for (let i = 1; i <= s2.length; i++) {
+                    for (let j = 1; j <= s1.length; j++) {
+                        if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
+                            matrix[i][j] = matrix[i - 1][j - 1];
+                        } else {
+                            matrix[i][j] = Math.min(
+                                matrix[i - 1][j - 1] + 1,
+                                matrix[i][j - 1] + 1,
+                                matrix[i - 1][j] + 1
+                            );
                         }
                     }
                 }
                 
-                if (!foundMatch && !foundDoubtfulMatch) {
-                    onlyInFile1.push(item1);
-                }
+                return matrix[s2.length][s1.length];
+            };
+            
+            const distance = levenshteinDistance(normStr1, normStr2);
+            const maxLength = Math.max(normStr1.length, normStr2.length);
+            return maxLength === 0 ? 1 : 1 - (distance / maxLength);
+        }
+        
+        function showResults() {
+            resultsSection.style.display = 'block';
+            setupResultsTabs();
+            showSummaryStats();
+            showMatches();
+            showFile1Only();
+            showFile2Only();
+            showExportButtons();
+        }
+        
+        function setupResultsTabs() {
+            const tabs = document.querySelectorAll('.results-tab');
+            const containers = document.querySelectorAll('.results-container');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.getAttribute('data-tab');
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    containers.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tabName}-container`).classList.add('active');
+                });
+            });
+        }
+        
+        function showSummaryStats() {
+            const statsHTML = `
+                <div class="stat-card match">
+                    <div class="stat-value">${comparisonResults.exactMatches.length}</div>
+                    <div class="stat-label">Correspondências (80%+)</div>
+                </div>
+                <div class="stat-card file1-only">
+                    <div class="stat-value">${comparisonResults.file1Only.length}</div>
+                    <div class="stat-label">Apenas no Arquivo 1</div>
+                </div>
+                <div class="stat-card file2-only">
+                    <div class="stat-value">${comparisonResults.file2Only.length}</div>
+                    <div class="stat-label">Apenas no Arquivo 2</div>
+                </div>
+            `;
+            
+            summaryStats.innerHTML = statsHTML;
+        }
+        
+        function showMatches() {
+            if (comparisonResults.exactMatches.length === 0) {
+                matchesContainer.innerHTML = '<div class="no-results"><p>Nenhuma correspondência com 80% ou mais de similaridade encontrada.</p></div>';
+                return;
             }
             
-            return {
-                matches: matches,
-                doubtfulMatches: doubtfulMatches,
-                onlyInFile1: onlyInFile1,
-                onlyInFile2: onlyInFile2
-            };
-        }
-
-        function areValuesSimilar(value1, value2) {
-            // Converter para minúsculas e remover acentos
-            const normalize = (str) => {
-                return str.toLowerCase()
-                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                    .replace(/\s+/g, ' ')
-                    .trim();
-            };
+            const selectedCols1 = selectedColumnsByFile[0] || [];
+            const selectedCols2 = selectedColumnsByFile[1] || [];
             
-            const n1 = normalize(value1);
-            const n2 = normalize(value2);
+            let tableHTML = `
+                <div style="overflow-x: auto;">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Similaridade</th>
+                            <th>Arquivo 1 - Linha</th>
+                            <th>Arquivo 2 - Linha</th>
+            `;
             
-            // Verificar se um valor contém o outro ou são iguais
-            return n1 === n2 || n1.includes(n2) || n2.includes(n1);
-        }
-
-        function displayResults(results) {
-            // Atualizar contadores
-            document.getElementById('only-in-file1-count').textContent = results.onlyInFile1.length;
-            document.getElementById('only-in-file2-count').textContent = results.onlyInFile2.length;
-            document.getElementById('matches-count').textContent = results.matches.length;
-            document.getElementById('doubtful-count').textContent = results.doubtfulMatches.length;
+            // Cabeçalhos das colunas selecionadas - mostrando ambas as versões
+            selectedCols1.forEach((col, index) => {
+                const col2 = selectedCols2[index] || col;
+                tableHTML += `<th>${col} (Arq1) ↔ ${col2} (Arq2)</th>`;
+            });
             
-            // Limpar resultados anteriores
-            commonResults.innerHTML = '';
-            doubtfulResults.innerHTML = '';
-            differentResults.innerHTML = '';
+            tableHTML += `</tr></thead><tbody>`;
             
-            // Exibir correspondências
-            results.matches.forEach(match => {
-                const item = document.createElement('div');
-                item.className = 'result-item';
+            comparisonResults.exactMatches.forEach(match => {
+                const similarityClass = 'high-similarity';
                 
-                const details = `
-                    <div><strong>Coluna 01:</strong> ${match.item1.coluna1}</div>
-                    <div><strong>Coluna 02:</strong> ${match.item1.coluna2.toFixed(2)}</div>
-                    ${match.item1.coluna3 ? `<div><strong>Coluna 03:</strong> ${match.item1.coluna3}</div>` : ''}
-                    ${match.item1.coluna4 ? `<div><strong>Coluna 04:</strong> ${match.item1.coluna4}</div>` : ''}
-                    <div class="result-details">Correspondência exata entre ${file1Name} e ${file2Name}</div>
+                tableHTML += `
+                    <tr class="match-row comparison-row">
+                        <td class="${similarityClass}">${match.similarity}%</td>
+                        <td>${match.row1 + 1}</td>
+                        <td>${match.row2 + 1}</td>
                 `;
                 
-                item.innerHTML = details;
-                commonResults.appendChild(item);
+                // Dados das colunas selecionadas - mostrando ambos os valores
+                selectedCols1.forEach((col, index) => {
+                    const col2 = selectedCols2[index] || col;
+                    const value1 = match.row1Data[col] || '';
+                    const value2 = match.row2Data[col2] || '';
+                    
+                    tableHTML += `<td>
+                        <strong>Arq1:</strong> ${value1}<br>
+                        <strong>Arq2:</strong> ${value2}
+                    </td>`;
+                });
+                
+                tableHTML += `</tr>`;
             });
             
-            // Exibir correspondências duvidosas
-            results.doubtfulMatches.forEach(match => {
-                const item = document.createElement('div');
-                item.className = 'result-item';
-                
-                const details = `
-                    <div><strong>Coluna 01:</strong> ${match.item1.coluna1}</div>
-                    <div><strong>Coluna 02 (${file1Name}):</strong> ${match.item1.coluna2.toFixed(2)}</div>
-                    <div><strong>Coluna 02 (${file2Name}):</strong> ${match.item2.coluna2.toFixed(2)}</div>
-                    <div><strong>Diferença:</strong> ${match.diff.toFixed(2)}</div>
-                    ${match.item1.coluna3 ? `<div><strong>Coluna 03 (${file1Name}):</strong> ${match.item1.coluna3}</div>` : ''}
-                    ${match.item2.coluna3 ? `<div><strong>Coluna 03 (${file2Name}):</strong> ${match.item2.coluna3}</div>` : ''}
-                    ${match.item1.coluna4 ? `<div><strong>Coluna 04:</strong> ${match.item1.coluna4}</div>` : ''}
-                    <div class="result-details">Correspondência duvidosa entre ${file1Name} e ${file2Name}</div>
-                `;
-                
-                item.innerHTML = details;
-                doubtfulResults.appendChild(item);
-            });
-            
-            // Exibir itens apenas no arquivo 1
-            results.onlyInFile1.forEach(item => {
-                const elem = document.createElement('div');
-                elem.className = 'result-item';
-                
-                const details = `
-                    <div><strong>Coluna 01:</strong> ${item.coluna1}</div>
-                    <div><strong>Coluna 02:</strong> ${item.coluna2.toFixed(2)}</div>
-                    ${item.coluna3 ? `<div><strong>Coluna 03:</strong> ${item.coluna3}</div>` : ''}
-                    ${item.coluna4 ? `<div><strong>Coluna 04:</strong> ${item.coluna4}</div>` : ''}
-                    <div class="result-details">Presente apenas em ${file1Name}</div>
-                `;
-                
-                elem.innerHTML = details;
-                differentResults.appendChild(elem);
-            });
-            
-            // Exibir itens apenas no arquivo 2
-            results.onlyInFile2.forEach(item => {
-                const elem = document.createElement('div');
-                elem.className = 'result-item';
-                
-                const details = `
-                    <div><strong>Coluna 01:</strong> ${item.coluna1}</div>
-                    <div><strong>Coluna 02:</strong> ${item.coluna2.toFixed(2)}</div>
-                    ${item.coluna3 ? `<div><strong>Coluna 03:</strong> ${item.coluna3}</div>` : ''}
-                    ${item.coluna4 ? `<div><strong>Coluna 04:</strong> ${item.coluna4}</div>` : ''}
-                    <div class="result-details">Presente apenas em ${file2Name}</div>
-                `;
-                
-                elem.innerHTML = details;
-                differentResults.appendChild(elem);
-            });
-            
-            // Adicionar event listeners para os filtros
-            document.getElementById('filter-coluna1').addEventListener('input', filterResults);
-            document.getElementById('filter-coluna3').addEventListener('input', filterResults);
-            document.getElementById('filter-status').addEventListener('change', filterResults);
+            tableHTML += `</tbody></table></div>`;
+            matchesContainer.innerHTML = tableHTML;
         }
-
-        function filterResults() {
-            const coluna1Filter = document.getElementById('filter-coluna1').value.toLowerCase();
-            const coluna3Filter = document.getElementById('filter-coluna3').value.toLowerCase();
-            const statusFilter = document.getElementById('filter-status').value;
+        
+        function showFile1Only() {
+            if (comparisonResults.file1Only.length === 0) {
+                file1OnlyContainer.innerHTML = '<div class="no-results"><p>Nenhuma linha encontrada apenas no Arquivo 1.</p></div>';
+                return;
+            }
             
-            // Filtrar correspondências
-            const commonItems = commonResults.querySelectorAll('.result-item');
-            commonItems.forEach(item => {
-                const coluna1 = item.querySelector('div:first-child').textContent.toLowerCase();
-                const coluna3 = item.querySelector('div:nth-child(3)') ? item.querySelector('div:nth-child(3)').textContent.toLowerCase() : '';
-                const status = 'correspondentes';
-                
-                const show = (coluna1.includes(coluna1Filter) || coluna1Filter === '') &&
-                            (coluna3.includes(coluna3Filter) || coluna3Filter === '') &&
-                            (statusFilter === 'todos' || statusFilter === 'correspondentes');
-                
-                item.style.display = show ? 'flex' : 'none';
+            const selectedCols = selectedColumnsByFile[0] || [];
+            
+            let tableHTML = `
+                <div style="overflow-x: auto;">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Linha</th>
+            `;
+            
+            selectedCols.forEach(header => {
+                tableHTML += `<th>${header}</th>`;
             });
             
-            // Filtrar correspondências duvidosas
-            const doubtfulItems = doubtfulResults.querySelectorAll('.result-item');
-            doubtfulItems.forEach(item => {
-                const coluna1 = item.querySelector('div:first-child').textContent.toLowerCase();
-                const coluna3 = item.querySelector('div:nth-child(5)') ? item.querySelector('div:nth-child(5)').textContent.toLowerCase() : '';
-                const status = 'duvidosos';
+            tableHTML += `</tr></thead><tbody>`;
+            
+            comparisonResults.file1Only.forEach(item => {
+                tableHTML += `
+                    <tr class="only-in-file1">
+                        <td>${item.row + 1}</td>
+                `;
                 
-                const show = (coluna1.includes(coluna1Filter) || coluna1Filter === '') &&
-                            (coluna3.includes(coluna3Filter) || coluna3Filter === '') &&
-                            (statusFilter === 'todos' || statusFilter === 'duvidosos');
+                selectedCols.forEach(col => {
+                    tableHTML += `<td>${item.rowData[col] || ''}</td>`;
+                });
                 
-                item.style.display = show ? 'flex' : 'none';
+                tableHTML += `</tr>`;
             });
             
-            // Filtrar divergências
-            const differentItems = differentResults.querySelectorAll('.result-item');
-            differentItems.forEach(item => {
-                const coluna1 = item.querySelector('div:first-child').textContent.toLowerCase();
-                const coluna3 = item.querySelector('div:nth-child(3)') ? item.querySelector('div:nth-child(3)').textContent.toLowerCase() : '';
-                const statusText = item.querySelector('.result-details').textContent.toLowerCase();
-                let status = '';
-                
-                if (statusText.includes(file1Name.toLowerCase())) status = 'apenas-arquivo1';
-                if (statusText.includes(file2Name.toLowerCase())) status = 'apenas-arquivo2';
-                
-                const show = (coluna1.includes(coluna1Filter) || coluna1Filter === '') &&
-                            (coluna3.includes(coluna3Filter) || coluna3Filter === '') &&
-                            (statusFilter === 'todos' || statusFilter === status);
-                
-                item.style.display = show ? 'flex' : 'none';
-            });
+            tableHTML += `</tbody></table></div>`;
+            file1OnlyContainer.innerHTML = tableHTML;
         }
-
-        function downloadReport() {
-            // Criar um workbook para o relatório
+        
+        function showFile2Only() {
+            if (comparisonResults.file2Only.length === 0) {
+                file2OnlyContainer.innerHTML = '<div class="no-results"><p>Nenhuma linha encontrada apenas no Arquivo 2.</p></div>';
+                return;
+            }
+            
+            const selectedCols = selectedColumnsByFile[1] || [];
+            
+            let tableHTML = `
+                <div style="overflow-x: auto;">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Linha</th>
+            `;
+            
+            selectedCols.forEach(header => {
+                tableHTML += `<th>${header}</th>`;
+            });
+            
+            tableHTML += `</tr></thead><tbody>`;
+            
+            comparisonResults.file2Only.forEach(item => {
+                tableHTML += `
+                    <tr class="only-in-file2">
+                        <td>${item.row + 1}</td>
+                `;
+                
+                selectedCols.forEach(col => {
+                    tableHTML += `<td>${item.rowData[col] || ''}</td>`;
+                });
+                
+                tableHTML += `</tr>`;
+            });
+            
+            tableHTML += `</tbody></table></div>`;
+            file2OnlyContainer.innerHTML = tableHTML;
+        }
+        
+        function showExportButtons() {
+            exportMatchesBtn.style.display = 'inline-block';
+            exportFile1OnlyBtn.style.display = 'inline-block';
+            exportFile2OnlyBtn.style.display = 'inline-block';
+            exportAllBtn.style.display = 'inline-block';
+            
+            exportMatchesBtn.onclick = () => exportToExcel('matches');
+            exportFile1OnlyBtn.onclick = () => exportToExcel('file1-only');
+            exportFile2OnlyBtn.onclick = () => exportToExcel('file2-only');
+            exportAllBtn.onclick = () => exportToExcel('all');
+        }
+        
+        function exportToExcel(type) {
             const wb = XLSX.utils.book_new();
             
-            // Adicionar aba de correspondências
-            const matchesData = [
-                ['Coluna 01', 'Coluna 02 Arquivo 1', 'Coluna 02 Arquivo 2', 'Diferença', 'Coluna 03 Arquivo 1', 'Coluna 03 Arquivo 2', 'Coluna 04 Arquivo 1', 'Coluna 04 Arquivo 2', 'Status', 'Origem Arquivo 1', 'Origem Arquivo 2']
-            ];
-            
-            results.matches.forEach(match => {
-                matchesData.push([
-                    match.item1.coluna1,
-                    match.item1.coluna2,
-                    match.item2.coluna2,
-                    match.diff,
-                    match.item1.coluna3,
-                    match.item2.coluna3,
-                    match.item1.coluna4,
-                    match.item2.coluna4,
-                    'Correspondência',
-                    file1Name,
-                    file2Name
-                ]);
-            });
-            
-            const matchesSheet = XLSX.utils.aoa_to_sheet(matchesData);
-            XLSX.utils.book_append_sheet(wb, matchesSheet, 'Correspondências');
-            
-            // Adicionar aba de correspondências duvidosas
-            const doubtfulData = [
-                ['Coluna 01', 'Coluna 02 Arquivo 1', 'Coluna 02 Arquivo 2', 'Diferença', 'Coluna 03 Arquivo 1', 'Coluna 03 Arquivo 2', 'Coluna 04 Arquivo 1', 'Coluna 04 Arquivo 2', 'Status', 'Origem Arquivo 1', 'Origem Arquivo 2']
-            ];
-            
-            results.doubtfulMatches.forEach(match => {
-                doubtfulData.push([
-                    match.item1.coluna1,
-                    match.item1.coluna2,
-                    match.item2.coluna2,
-                    match.diff,
-                    match.item1.coluna3,
-                    match.item2.coluna3,
-                    match.item1.coluna4,
-                    match.item2.coluna4,
-                    'Correspondência Duvidosa',
-                    file1Name,
-                    file2Name
-                ]);
-            });
-            
-            const doubtfulSheet = XLSX.utils.aoa_to_sheet(doubtfulData);
-            XLSX.utils.book_append_sheet(wb, doubtfulSheet, 'Correspondências Duvidosas');
-            
-            // Adicionar aba de apenas no arquivo 1
-            const onlyInFile1Data = [
-                ['Coluna 01', 'Coluna 02', 'Coluna 03', 'Coluna 04', 'Status', 'Origem']
-            ];
-            
-            results.onlyInFile1.forEach(item => {
-                onlyInFile1Data.push([
-                    item.coluna1,
-                    item.coluna2,
-                    item.coluna3,
-                    item.coluna4,
-                    'Apenas no Arquivo 1',
-                    file1Name
-                ]);
-            });
-            
-            const onlyInFile1Sheet = XLSX.utils.aoa_to_sheet(onlyInFile1Data);
-            XLSX.utils.book_append_sheet(wb, onlyInFile1Sheet, `Apenas em ${file1Name.substring(0, 30)}`);
-            
-            // Adicionar aba de apenas no arquivo 2
-            const onlyInFile2Data = [
-                ['Coluna 01', 'Coluna 02', 'Coluna 03', 'Coluna 04', 'Status', 'Origem']
-            ];
-            
-            results.onlyInFile2.forEach(item => {
-                onlyInFile2Data.push([
-                    item.coluna1,
-                    item.coluna2,
-                    item.coluna3,
-                    item.coluna4,
-                    'Apenas no Arquivo 2',
-                    file2Name
-                ]);
-            });
-            
-            const onlyInFile2Sheet = XLSX.utils.aoa_to_sheet(onlyInFile2Data);
-            XLSX.utils.book_append_sheet(wb, onlyInFile2Sheet, `Apenas em ${file2Name.substring(0, 30)}`);
-            
-            // Gerar arquivo e fazer download
-            XLSX.writeFile(wb, 'relatorio_analise.xlsx');
-            
-            showSuccess('Relatório baixado com sucesso!');
-        }
-
-        function toggleDebugInfo() {
-            if (debugInfo.style.display === 'none' || debugInfo.style.display === '') {
-                debugInfo.style.display = 'block';
-                debugToggle.textContent = 'Ocultar informações de depuração';
-                
-                // Preencher informações de depuração
-                let debugContent = '';
-                
-                if (file1Data) {
-                    debugContent += `Arquivo 1 (${file1Name}): ${file1Data.length - 1} linhas de dados\n`;
-                    debugContent += `Colunas: ${file1Columns.join(', ')}\n\n`;
-                }
-                
-                if (file2Data) {
-                    debugContent += `Arquivo 2 (${file2Name}): ${file2Data.length - 1} linhas de dados\n`;
-                    debugContent += `Colunas: ${file2Columns.join(', ')}\n\n`;
-                }
-                
-                if (results) {
-                    debugContent += `Resultados:\n`;
-                    debugContent += `- Correspondências: ${results.matches.length}\n`;
-                    debugContent += `- Correspondências Duvidosas: ${results.doubtfulMatches.length}\n`;
-                    debugContent += `- Apenas no Arquivo 1: ${results.onlyInFile1.length}\n`;
-                    debugContent += `- Apenas no Arquivo 2: ${results.onlyInFile2.length}\n`;
-                }
-                
-                debugInfo.textContent = debugContent;
-            } else {
-                debugInfo.style.display = 'none';
-                debugToggle.textContent = 'Mostrar informações de depuração';
+            switch(type) {
+                case 'matches':
+                    if (comparisonResults.exactMatches.length > 0) {
+                        const data = prepareMatchesData();
+                        const ws = XLSX.utils.aoa_to_sheet(data);
+                        XLSX.utils.book_append_sheet(wb, ws, 'Correspondencias');
+                        XLSX.writeFile(wb, 'correspondencias.xlsx');
+                    } else {
+                        alert('Não há correspondências para exportar.');
+                    }
+                    break;
+                    
+                case 'file1-only':
+                    if (comparisonResults.file1Only.length > 0) {
+                        const data = prepareFileOnlyData(comparisonResults.file1Only, 0);
+                        const ws = XLSX.utils.aoa_to_sheet(data);
+                        XLSX.utils.book_append_sheet(wb, ws, 'Apenas_Arquivo1');
+                        XLSX.writeFile(wb, 'apenas_arquivo1.xlsx');
+                    } else {
+                        alert('Não há linhas apenas no Arquivo 1 para exportar.');
+                    }
+                    break;
+                    
+                case 'file2-only':
+                    if (comparisonResults.file2Only.length > 0) {
+                        const data = prepareFileOnlyData(comparisonResults.file2Only, 1);
+                        const ws = XLSX.utils.aoa_to_sheet(data);
+                        XLSX.utils.book_append_sheet(wb, ws, 'Apenas_Arquivo2');
+                        XLSX.writeFile(wb, 'apenas_arquivo2.xlsx');
+                    } else {
+                        alert('Não há linhas apenas no Arquivo 2 para exportar.');
+                    }
+                    break;
+                    
+                case 'all':
+                    exportAllSheets(wb);
+                    XLSX.writeFile(wb, 'relatorio_completo.xlsx');
+                    break;
             }
         }
+        
+        function prepareMatchesData() {
+            const selectedCols1 = selectedColumnsByFile[0] || [];
+            const selectedCols2 = selectedColumnsByFile[1] || [];
+            
+            const data = [
+                ['CORRESPONDÊNCIAS ENCONTRADAS (80%+ Similaridade)'],
+                [],
+                ['Similaridade', 'Arquivo 1 - Linha', 'Arquivo 2 - Linha']
+            ];
+            
+            // Adicionar cabeçalhos para as colunas selecionadas
+            const headers = ['Similaridade', 'Arquivo 1 - Linha', 'Arquivo 2 - Linha'];
+            selectedCols1.forEach((col, index) => {
+                const col2 = selectedCols2[index] || col;
+                headers.push(`${col} (Arq1)`);
+                headers.push(`${col2} (Arq2)`);
+            });
+            data[2] = headers;
+            
+            comparisonResults.exactMatches.forEach(match => {
+                const row = [
+                    `${match.similarity}%`,
+                    match.row1 + 1,
+                    match.row2 + 1
+                ];
+                
+                // Adicionar dados das colunas selecionadas
+                selectedCols1.forEach((col, index) => {
+                    const col2 = selectedCols2[index] || col;
+                    const value1 = match.row1Data[col] || '';
+                    const value2 = match.row2Data[col2] || '';
+                    row.push(value1);
+                    row.push(value2);
+                });
+                
+                data.push(row);
+            });
+            
+            return data;
+        }
+        
+        function prepareFileOnlyData(items, fileIndex) {
+            const selectedCols = selectedColumnsByFile[fileIndex] || [];
+            const fileName = fileData[fileIndex].name;
+            
+            const data = [
+                [`LINHAS APENAS NO ${fileName.toUpperCase()}`],
+                [],
+                ['Linha', ...selectedCols]
+            ];
+            
+            items.forEach(item => {
+                const row = [item.row + 1];
+                
+                selectedCols.forEach(col => {
+                    row.push(item.rowData[col] || '');
+                });
+                
+                data.push(row);
+            });
+            
+            return data;
+        }
+        
+        function exportAllSheets(wb) {
+            let hasData = false;
+            
+            if (comparisonResults.exactMatches.length > 0) {
+                const data = prepareMatchesData();
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                XLSX.utils.book_append_sheet(wb, ws, 'Correspondencias');
+                hasData = true;
+            }
+            
+            if (comparisonResults.file1Only.length > 0) {
+                const data = prepareFileOnlyData(comparisonResults.file1Only, 0);
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                XLSX.utils.book_append_sheet(wb, ws, 'Apenas_Arquivo1');
+                hasData = true;
+            }
+            
+            if (comparisonResults.file2Only.length > 0) {
+                const data = prepareFileOnlyData(comparisonResults.file2Only, 1);
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                XLSX.utils.book_append_sheet(wb, ws, 'Apenas_Arquivo2');
+                hasData = true;
+            }
+            
+            if (!hasData) {
+                alert('Não há dados para exportar.');
+            }
+        }
+        
+        // Inicializar
+        toggleSimilarityThreshold();
     </script>
 </body>
 </html>
