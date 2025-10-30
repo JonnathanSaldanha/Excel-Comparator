@@ -526,6 +526,124 @@
         .comparison-row {
             border-left: 4px solid var(--success-color);
         }
+
+        /* NOVOS ESTILOS ADICIONADOS */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pagination button.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .pagination button:hover:not(.active) {
+            background-color: #f0f0f0;
+        }
+
+        .examples-section {
+            background-color: #e8f6f3;
+            border-left: 4px solid var(--success-color);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .examples-section h4 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .examples-section ul {
+            margin-left: 20px;
+        }
+
+        .examples-section li {
+            margin-bottom: 8px;
+        }
+
+        .keyboard-shortcuts {
+            background-color: #fff8e1;
+            border: 1px solid #ffd54f;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ffecb3;
+        }
+
+        .settings-panel {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .performance-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .batch-comparison {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
@@ -537,13 +655,35 @@
         
         <div class="error-message" id="errorMessage"></div>
         
+        <!-- Seção de Exemplos -->
+        <div class="examples-section">
+            <h4>💡 Exemplos de Uso:</h4>
+            <ul>
+                <li><strong>Comparar listas de clientes</strong> de diferentes sistemas</li>
+                <li><strong>Encontrar duplicatas</strong> em bases de dados diferentes</li>
+                <li><strong>Reconciliar planilhas</strong> com formatos diferentes</li>
+                <li><strong>Validar migração</strong> de dados entre sistemas</li>
+            </ul>
+        </div>
+
         <div class="card">
-            <h2 class="card-title">Upload de Arquivos</h2>
+            <h2 class="card-title">Upload de Arquivos 
+                <span class="tooltip">ℹ️
+                    <span class="tooltiptext">
+                        Arraste ou selecione arquivos Excel (.xlsx, .xls). 
+                        Você pode comparar múltiplos arquivos simultaneamente.
+                    </span>
+                </span>
+            </h2>
+            
             <div class="upload-area" id="uploadArea">
                 <p>Arraste e solte seus arquivos Excel aqui ou</p>
                 <button class="btn" id="browseBtn">Selecionar Arquivos</button>
                 <input type="file" id="fileInput" class="file-input" multiple accept=".xlsx, .xls">
                 <p class="file-types">Formatos suportados: .xlsx, .xls</p>
+                <p class="performance-warning">
+                    ⚠️ <strong>Dica:</strong> Para arquivos grandes (+10MB), considere dividir em partes menores para melhor performance.
+                </p>
             </div>
             
             <div class="file-list" id="fileList"></div>
@@ -566,10 +706,35 @@
                 independente da ordem das colunas.</p>
                 <p><strong>Filtro automático:</strong> Apenas correspondências com 80% ou mais de similaridade serão consideradas.</p>
             </div>
+
+            <!-- Painel de Atalhos -->
+            <div class="keyboard-shortcuts">
+                <h4>⌨️ Atalhos de Teclado:</h4>
+                <div class="shortcut-item">
+                    <span>Ctrl + 1-9</span>
+                    <span>Alternar entre abas de arquivos</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Ctrl + Enter</span>
+                    <span>Iniciar comparação</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Esc</span>
+                    <span>Limpar seleção</span>
+                </div>
+            </div>
             
             <div class="config-section">
                 <div class="form-group">
-                    <label for="searchType">Tipo de Busca</label>
+                    <label for="searchType">
+                        Tipo de Busca 
+                        <span class="tooltip">ℹ️
+                            <span class="tooltiptext">
+                                <strong>Busca Exata:</strong> Valores devem ser idênticos<br>
+                                <strong>Busca por Similaridade:</strong> Encontra valores similares (recomendado)
+                            </span>
+                        </span>
+                    </label>
                     <select id="searchType">
                         <option value="exact">Busca Exata</option>
                         <option value="similar" selected>Busca por Similaridade</option>
@@ -577,7 +742,15 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="similarityThreshold">Limiar de Similaridade Mínima (%)</label>
+                    <label for="similarityThreshold">
+                        Limiar de Similaridade Mínima (%) 
+                        <span class="tooltip">ℹ️
+                            <span class="tooltiptext">
+                                Define o percentual mínimo de similaridade para considerar uma correspondência.
+                                Valores mais altos = menos falsos positivos, mas podem perder algumas correspondências.
+                            </span>
+                        </span>
+                    </label>
                     <input type="number" id="similarityThreshold" min="80" max="100" value="80">
                     <small style="color: #666;">Mínimo: 80% (apenas alta correspondência)</small>
                 </div>
@@ -589,8 +762,21 @@
                 <div id="columnContainers"></div>
                 <p class="column-info">Selecione as colunas que deseja comparar em cada arquivo.</p>
             </div>
+
+            <!-- Configurações Salvas -->
+            <div class="settings-panel" id="savedSettingsPanel" style="display: none;">
+                <h4>⚙️ Configurações Salvas</h4>
+                <select id="savedSettingsSelect" style="width: 100%; margin-bottom: 10px;">
+                    <option value="">-- Selecione uma configuração salva --</option>
+                </select>
+                <div>
+                    <button class="btn" id="loadSettingsBtn" style="display: none;">Carregar Configuração</button>
+                    <button class="btn btn-success" id="saveSettingsBtn">Salvar Configuração</button>
+                    <button class="btn btn-danger" id="deleteSettingsBtn" style="display: none;">Excluir Configuração</button>
+                </div>
+            </div>
             
-            <button class="btn btn-success" id="compareBtn">Iniciar Comparação</button>
+            <button class="btn btn-success" id="compareBtn">Iniciar Comparação (Ctrl+Enter)</button>
         </div>
         
         <div class="loading" id="loadingSection">
@@ -599,6 +785,7 @@
             <div class="progress-bar">
                 <div class="progress" id="progressBar"></div>
             </div>
+            <p id="progressText">0%</p>
         </div>
         
         <div class="card results-section" id="resultsSection">
@@ -613,9 +800,15 @@
             </div>
             
             <div id="resultsContainers">
-                <div class="results-container active" id="matches-container"></div>
-                <div class="results-container" id="file1-only-container"></div>
-                <div class="results-container" id="file2-only-container"></div>
+                <div class="results-container active" id="matches-container">
+                    <div class="pagination" id="matchesPagination"></div>
+                </div>
+                <div class="results-container" id="file1-only-container">
+                    <div class="pagination" id="file1Pagination"></div>
+                </div>
+                <div class="results-container" id="file2-only-container">
+                    <div class="pagination" id="file2Pagination"></div>
+                </div>
             </div>
             
             <div class="export-buttons">
@@ -637,6 +830,13 @@
         let fileData = [];
         let selectedColumnsByFile = {};
         let comparisonResults = {};
+        let currentPage = {
+            matches: 1,
+            'file1-only': 1,
+            'file2-only': 1
+        };
+        const pageSize = 50;
+        let savedSettings = JSON.parse(localStorage.getItem('excelComparatorSettings') || '{}');
         
         // Elementos DOM
         const uploadArea = document.getElementById('uploadArea');
@@ -655,6 +855,7 @@
         const compareBtn = document.getElementById('compareBtn');
         const loadingSection = document.getElementById('loadingSection');
         const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
         const resultsSection = document.getElementById('resultsSection');
         const summaryStats = document.getElementById('summaryStats');
         const resultsTabs = document.getElementById('resultsTabs');
@@ -666,14 +867,26 @@
         const exportFile1OnlyBtn = document.getElementById('exportFile1OnlyBtn');
         const exportFile2OnlyBtn = document.getElementById('exportFile2OnlyBtn');
         const errorMessage = document.getElementById('errorMessage');
-        
+        const savedSettingsPanel = document.getElementById('savedSettingsPanel');
+        const savedSettingsSelect = document.getElementById('savedSettingsSelect');
+        const loadSettingsBtn = document.getElementById('loadSettingsBtn');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const deleteSettingsBtn = document.getElementById('deleteSettingsBtn');
+
         // Event Listeners
         browseBtn.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', handleFileSelect);
         clearFilesBtn.addEventListener('click', clearFiles);
         searchType.addEventListener('change', toggleSimilarityThreshold);
         compareBtn.addEventListener('click', startComparison);
-        
+        saveSettingsBtn.addEventListener('click', saveCurrentSettings);
+        loadSettingsBtn.addEventListener('click', loadSelectedSettings);
+        deleteSettingsBtn.addEventListener('click', deleteSelectedSettings);
+        savedSettingsSelect.addEventListener('change', updateSettingsButtons);
+
+        // Atalhos de teclado
+        document.addEventListener('keydown', handleKeyboardShortcuts);
+
         // Drag and Drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -689,8 +902,435 @@
             uploadArea.classList.remove('dragover');
             handleFiles(e.dataTransfer.files);
         });
+
+        // Inicializar configurações salvas
+        initializeSavedSettings();
+
+        // FUNÇÕES DE SIMILARIDADE MELHORADAS
+        function calculateSimilarity(str1, str2) {
+            // Primeiro, verifica se são exatamente iguais
+            if (str1 === str2) return 1;
+            
+            // Remove espaços extras e normaliza
+            const cleanStr1 = str1.toString().trim();
+            const cleanStr2 = str2.toString().trim();
+            
+            // Tenta comparar como números (incluindo decimais e porcentagens)
+            const num1 = parseNumber(cleanStr1);
+            const num2 = parseNumber(cleanStr2);
+            
+            if (!isNaN(num1) && !isNaN(num2)) {
+                // Se ambos são números válidos, calcula similaridade numérica
+                return calculateNumericSimilarity(num1, num2);
+            }
+            
+            // Se não são números, usa similaridade textual
+            return calculateTextSimilarity(cleanStr1, cleanStr2);
+        }
         
-        // Funções
+        function parseNumber(str) {
+            // Remove caracteres não numéricos, exceto ponto, vírgula e sinal de porcentagem
+            let cleanStr = str.replace(/[^\d,.%\-]/g, '');
+            
+            // Se termina com %, trata como porcentagem
+            const isPercentage = cleanStr.endsWith('%');
+            if (isPercentage) {
+                cleanStr = cleanStr.replace('%', '');
+            }
+            
+            // Substitui vírgula por ponto para parseFloat
+            cleanStr = cleanStr.replace(',', '.');
+            
+            // Remove múltiplos pontos decimais
+            const parts = cleanStr.split('.');
+            if (parts.length > 2) {
+                cleanStr = parts[0] + '.' + parts.slice(1).join('');
+            }
+            
+            const num = parseFloat(cleanStr);
+            
+            // Se era porcentagem, converte para decimal
+            if (isPercentage && !isNaN(num)) {
+                return num / 100;
+            }
+            
+            return num;
+        }
+        
+        function calculateNumericSimilarity(num1, num2) {
+            // Se são exatamente iguais
+            if (num1 === num2) return 1;
+            
+            // Se um dos números é zero, cuidado com divisão por zero
+            if (num1 === 0 || num2 === 0) {
+                return (num1 === num2) ? 1 : 0;
+            }
+            
+            // Calcula a diferença relativa
+            const diff = Math.abs(num1 - num2);
+            const avg = (Math.abs(num1) + Math.abs(num2)) / 2;
+            
+            // Similaridade baseada na diferença relativa
+            const relativeDiff = diff / avg;
+            
+            // Para números muito próximos, considera alta similaridade
+            if (relativeDiff < 0.01) { // 1% de diferença
+                return 0.95;
+            } else if (relativeDiff < 0.05) { // 5% de diferença
+                return 0.85;
+            } else if (relativeDiff < 0.1) { // 10% de diferença
+                return 0.7;
+            } else if (relativeDiff < 0.2) { // 20% de diferença
+                return 0.5;
+            }
+            
+            return 0;
+        }
+        
+        function calculateTextSimilarity(str1, str2) {
+            const normalize = (str) => {
+                if (!str) return '';
+                return str.toString()
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // remove acentos
+                    .replace(/[^\w\s]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            };
+            
+            const normStr1 = normalize(str1);
+            const normStr2 = normalize(str2);
+            
+            if (normStr1 === normStr2) return 1;
+            
+            // Verifica se uma string contém a outra
+            if (normStr1.includes(normStr2) || normStr2.includes(normStr1)) {
+                const longer = Math.max(normStr1.length, normStr2.length);
+                const shorter = Math.min(normStr1.length, normStr2.length);
+                return shorter / longer;
+            }
+            
+            // Similaridade por Jaro-Winkler (melhor para nomes próprios)
+            return jaroWinklerSimilarity(normStr1, normStr2);
+        }
+        
+        function jaroWinklerSimilarity(s1, s2) {
+            if (s1 === s2) return 1;
+            
+            const m = matchingCharacters(s1, s2);
+            if (m === 0) return 0;
+            
+            const t = transpositions(s1, s2, m);
+            const j = ((m / s1.length) + (m / s2.length) + ((m - t) / m)) / 3;
+            
+            // Winkler modification: boost for common prefix
+            let prefix = 0;
+            const maxPrefix = Math.min(4, s1.length, s2.length);
+            for (let i = 0; i < maxPrefix; i++) {
+                if (s1[i] === s2[i]) prefix++;
+                else break;
+            }
+            
+            return j + (prefix * 0.1 * (1 - j));
+        }
+        
+        function matchingCharacters(s1, s2) {
+            const maxDistance = Math.floor(Math.max(s1.length, s2.length) / 2) - 1;
+            let matches = 0;
+            const matched2 = new Array(s2.length).fill(false);
+            
+            for (let i = 0; i < s1.length; i++) {
+                const start = Math.max(0, i - maxDistance);
+                const end = Math.min(i + maxDistance + 1, s2.length);
+                
+                for (let j = start; j < end; j++) {
+                    if (!matched2[j] && s1[i] === s2[j]) {
+                        matches++;
+                        matched2[j] = true;
+                        break;
+                    }
+                }
+            }
+            
+            return matches;
+        }
+        
+        function transpositions(s1, s2, matches) {
+            if (matches === 0) return 0;
+            
+            let transpositions = 0;
+            let k = 0;
+            const maxDistance = Math.floor(Math.max(s1.length, s2.length) / 2) - 1;
+            const matched2 = new Array(s2.length).fill(false);
+            
+            for (let i = 0; i < s1.length; i++) {
+                const start = Math.max(0, i - maxDistance);
+                const end = Math.min(i + maxDistance + 1, s2.length);
+                
+                for (let j = start; j < end; j++) {
+                    if (!matched2[j] && s1[i] === s2[j]) {
+                        if (i !== k && j !== k) transpositions++;
+                        matched2[j] = true;
+                        k++;
+                        break;
+                    }
+                }
+            }
+            
+            return transpositions / 2;
+        }
+
+        function calculateSetSimilarity(values1, values2, isExactSearch) {
+            if (values1.length === 0 && values2.length === 0) return 1;
+            if (values1.length === 0 || values2.length === 0) return 0;
+            
+            // Para busca exata, usa comparação direta
+            if (isExactSearch) {
+                const set1 = new Set(values1);
+                const set2 = new Set(values2);
+                const intersection = new Set([...set1].filter(x => set2.has(x)));
+                const union = new Set([...set1, ...set2]);
+                return union.size === 0 ? 1 : intersection.size / union.size;
+            }
+            
+            // Para busca por similaridade, usa algoritmo melhorado
+            let totalSimilarity = 0;
+            const usedIndexes = new Set();
+            
+            // Para cada valor no primeiro conjunto, encontra a melhor correspondência no segundo
+            values1.forEach((val1, i) => {
+                let bestSimilarity = 0;
+                let bestIndex = -1;
+                
+                values2.forEach((val2, j) => {
+                    if (usedIndexes.has(j)) return;
+                    
+                    const similarity = calculateSimilarity(val1, val2);
+                    
+                    if (similarity > bestSimilarity) {
+                        bestSimilarity = similarity;
+                        bestIndex = j;
+                    }
+                });
+                
+                if (bestIndex !== -1 && bestSimilarity > 0.6) { // Limiar mais baixo para matching individual
+                    totalSimilarity += bestSimilarity;
+                    usedIndexes.add(bestIndex);
+                }
+            });
+            
+            // Calcula similaridade média ponderada
+            const maxPossibleMatches = Math.max(values1.length, values2.length);
+            return maxPossibleMatches > 0 ? totalSimilarity / maxPossibleMatches : 0;
+        }
+
+        // NOVAS FUNÇÕES ADICIONADAS
+        function handleKeyboardShortcuts(e) {
+            if (e.ctrlKey) {
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        if (compareBtn.style.display !== 'none') {
+                            startComparison();
+                        }
+                        break;
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        e.preventDefault();
+                        const index = parseInt(e.key) - 1;
+                        if (index < fileData.length) {
+                            activateTab(index);
+                            activateColumnTab(index);
+                        }
+                        break;
+                }
+            } else if (e.key === 'Escape') {
+                clearFiles();
+            }
+        }
+
+        function initializeSavedSettings() {
+            if (Object.keys(savedSettings).length > 0) {
+                savedSettingsPanel.style.display = 'block';
+                updateSavedSettingsSelect();
+            }
+        }
+
+        function updateSavedSettingsSelect() {
+            savedSettingsSelect.innerHTML = '<option value="">-- Selecione uma configuração salva --</option>';
+            Object.keys(savedSettings).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = key;
+                savedSettingsSelect.appendChild(option);
+            });
+        }
+
+        function updateSettingsButtons() {
+            const selected = savedSettingsSelect.value;
+            loadSettingsBtn.style.display = selected ? 'inline-block' : 'none';
+            deleteSettingsBtn.style.display = selected ? 'inline-block' : 'none';
+        }
+
+        function saveCurrentSettings() {
+            const settingsName = prompt('Digite um nome para esta configuração:');
+            if (!settingsName) return;
+
+            const settings = {
+                searchType: searchType.value,
+                similarityThreshold: similarityThreshold.value,
+                selectedColumns: {...selectedColumnsByFile}
+            };
+
+            savedSettings[settingsName] = settings;
+            localStorage.setItem('excelComparatorSettings', JSON.stringify(savedSettings));
+            
+            savedSettingsPanel.style.display = 'block';
+            updateSavedSettingsSelect();
+            savedSettingsSelect.value = settingsName;
+            updateSettingsButtons();
+            
+            alert(`Configuração "${settingsName}" salva com sucesso!`);
+        }
+
+        function loadSelectedSettings() {
+            const settingsName = savedSettingsSelect.value;
+            if (!settingsName) return;
+
+            const settings = savedSettings[settingsName];
+            if (!settings) return;
+
+            searchType.value = settings.searchType;
+            similarityThreshold.value = settings.similarityThreshold;
+            
+            // Aplicar seleção de colunas
+            if (settings.selectedColumns) {
+                selectedColumnsByFile = {...settings.selectedColumns};
+                updateCheckboxesFromSettings();
+            }
+
+            toggleSimilarityThreshold();
+            alert(`Configuração "${settingsName}" carregada com sucesso!`);
+        }
+
+        function deleteSelectedSettings() {
+            const settingsName = savedSettingsSelect.value;
+            if (!settingsName || !confirm(`Tem certeza que deseja excluir a configuração "${settingsName}"?`)) return;
+
+            delete savedSettings[settingsName];
+            localStorage.setItem('excelComparatorSettings', JSON.stringify(savedSettings));
+            
+            updateSavedSettingsSelect();
+            updateSettingsButtons();
+            
+            if (Object.keys(savedSettings).length === 0) {
+                savedSettingsPanel.style.display = 'none';
+            }
+        }
+
+        function updateCheckboxesFromSettings() {
+            Object.keys(selectedColumnsByFile).forEach(fileIndex => {
+                const container = document.getElementById(`column-${fileIndex}`);
+                if (!container) return;
+
+                const checkboxes = container.querySelectorAll('input[type="checkbox"]:not([id^="select-all-"])');
+                const selectedCols = selectedColumnsByFile[fileIndex] || [];
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectedCols.includes(checkbox.value);
+                });
+
+                const selectAllCheckbox = document.getElementById(`select-all-${fileIndex}`);
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = selectedCols.length === checkboxes.length;
+                }
+            });
+        }
+
+        function updateProgress(percent) {
+            progressBar.style.width = percent + '%';
+            progressText.textContent = percent + '%';
+        }
+
+        function simulateProgress() {
+            let width = 0;
+            const interval = setInterval(() => {
+                width += 5;
+                updateProgress(width);
+                
+                if (width >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loadingSection.style.display = 'none';
+                        performComparison();
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function getPaginatedData(data, page, pageSize) {
+            const start = (page - 1) * pageSize;
+            const end = start + pageSize;
+            return data.slice(start, end);
+        }
+
+        function createPagination(totalItems, currentPage, pageSize, containerId, type) {
+            const totalPages = Math.ceil(totalItems / pageSize);
+            if (totalPages <= 1) return '';
+
+            let paginationHTML = '<div class="pagination">';
+            
+            // Botão anterior
+            if (currentPage > 1) {
+                paginationHTML += `<button onclick="changePage('${type}', ${currentPage - 1})">&laquo; Anterior</button>`;
+            }
+
+            // Páginas
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `<button onclick="changePage('${type}', ${i})" ${i === currentPage ? 'class="active"' : ''}>${i}</button>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += '<span>...</span>';
+                }
+            }
+
+            // Botão próximo
+            if (currentPage < totalPages) {
+                paginationHTML += `<button onclick="changePage('${type}', ${currentPage + 1})">Próximo &raquo;</button>`;
+            }
+
+            paginationHTML += `</div><div style="text-align: center; margin-top: 10px; color: #666;">
+                Página ${currentPage} de ${totalPages} - Total: ${totalItems} itens
+            </div>`;
+
+            return paginationHTML;
+        }
+
+        function changePage(type, page) {
+            currentPage[type] = page;
+            
+            switch(type) {
+                case 'matches':
+                    showMatches();
+                    break;
+                case 'file1-only':
+                    showFile1Only();
+                    break;
+                case 'file2-only':
+                    showFile2Only();
+                    break;
+            }
+        }
+
+        // FUNÇÕES EXISTENTES (com algumas modificações)
         function handleFileSelect(e) {
             handleFiles(e.target.files);
         }
@@ -1035,27 +1675,11 @@
             
             loadingSection.style.display = 'block';
             resultsSection.style.display = 'none';
-            progressBar.style.width = '0%';
+            updateProgress(0);
             
             setTimeout(() => {
                 simulateProgress();
             }, 500);
-        }
-        
-        function simulateProgress() {
-            let width = 0;
-            const interval = setInterval(() => {
-                width += 5;
-                progressBar.style.width = width + '%';
-                
-                if (width >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        loadingSection.style.display = 'none';
-                        performComparison();
-                    }, 500);
-                }
-            }, 100);
         }
         
         function filterHighConfidenceMatches(matches, threshold = 0.8) {
@@ -1196,112 +1820,6 @@
             });
         }
         
-        function calculateSetSimilarity(values1, values2, isExactSearch) {
-            if (values1.length === 0 && values2.length === 0) return 1;
-            if (values1.length === 0 || values2.length === 0) return 0;
-            
-            let totalSimilarity = 0;
-            let matchesFound = 0;
-            const usedIndexes = new Set();
-            
-            values1.forEach(val1 => {
-                let bestSimilarity = 0;
-                let bestIndex = -1;
-                
-                values2.forEach((val2, index) => {
-                    if (usedIndexes.has(index)) return;
-                    
-                    let similarity = 0;
-                    if (isExactSearch) {
-                        similarity = val1 === val2 ? 1 : 0;
-                    } else {
-                        similarity = calculateSimilarity(val1, val2);
-                    }
-                    
-                    if (similarity > bestSimilarity) {
-                        bestSimilarity = similarity;
-                        bestIndex = index;
-                    }
-                });
-                
-                if (bestIndex !== -1 && bestSimilarity > 0) {
-                    totalSimilarity += bestSimilarity;
-                    matchesFound++;
-                    usedIndexes.add(bestIndex);
-                }
-            });
-            
-            const maxPossibleMatches = Math.max(values1.length, values2.length);
-            return matchesFound > 0 ? totalSimilarity / maxPossibleMatches : 0;
-        }
-        
-        function calculateSimilarity(str1, str2) {
-            // Primeiro, tenta comparar como números (para casos como "107482" e "00107482")
-            const num1 = parseFloat(str1.replace(/[^\d.,]/g, '').replace(',', '.'));
-            const num2 = parseFloat(str2.replace(/[^\d.,]/g, '').replace(',', '.'));
-            
-            if (!isNaN(num1) && !isNaN(num2)) {
-                // Se ambos são números válidos, compara os valores numéricos
-                if (num1 === num2) return 1;
-                // Se são números próximos (dentro de uma pequena margem)
-                if (Math.abs(num1 - num2) < 0.0001) return 1;
-            }
-            
-            // Remove zeros à esquerda e compara como string
-            const cleanStr1 = str1.replace(/^0+/, '');
-            const cleanStr2 = str2.replace(/^0+/, '');
-            
-            if (cleanStr1 === cleanStr2) return 1;
-            
-            const normalize = (str) => {
-                if (!str) return '';
-                return str.toString().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
-            };
-            
-            const normStr1 = normalize(str1);
-            const normStr2 = normalize(str2);
-            
-            if (normStr1 === normStr2) return 1;
-            
-            if (normStr1.includes(normStr2) || normStr2.includes(normStr1)) {
-                const longer = Math.max(normStr1.length, normStr2.length);
-                const shorter = Math.min(normStr1.length, normStr2.length);
-                return shorter / longer;
-            }
-            
-            const levenshteinDistance = (s1, s2) => {
-                const matrix = [];
-                
-                for (let i = 0; i <= s2.length; i++) {
-                    matrix[i] = [i];
-                }
-                
-                for (let j = 0; j <= s1.length; j++) {
-                    matrix[0][j] = j;
-                }
-                
-                for (let i = 1; i <= s2.length; i++) {
-                    for (let j = 1; j <= s1.length; j++) {
-                        if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
-                            matrix[i][j] = matrix[i - 1][j - 1];
-                        } else {
-                            matrix[i][j] = Math.min(
-                                matrix[i - 1][j - 1] + 1,
-                                matrix[i][j - 1] + 1,
-                                matrix[i - 1][j] + 1
-                            );
-                        }
-                    }
-                }
-                
-                return matrix[s2.length][s1.length];
-            };
-            
-            const distance = levenshteinDistance(normStr1, normStr2);
-            const maxLength = Math.max(normStr1.length, normStr2.length);
-            return maxLength === 0 ? 1 : 1 - (distance / maxLength);
-        }
-        
         function showResults() {
             resultsSection.style.display = 'block';
             setupResultsTabs();
@@ -1356,6 +1874,7 @@
             
             const selectedCols1 = selectedColumnsByFile[0] || [];
             const selectedCols2 = selectedColumnsByFile[1] || [];
+            const paginatedData = getPaginatedData(comparisonResults.exactMatches, currentPage.matches, pageSize);
             
             let tableHTML = `
                 <div style="overflow-x: auto;">
@@ -1375,7 +1894,7 @@
             
             tableHTML += `</tr></thead><tbody>`;
             
-            comparisonResults.exactMatches.forEach(match => {
+            paginatedData.forEach(match => {
                 const similarityClass = 'high-similarity';
                 
                 tableHTML += `
@@ -1401,7 +1920,16 @@
             });
             
             tableHTML += `</tbody></table></div>`;
-            matchesContainer.innerHTML = tableHTML;
+            
+            const paginationHTML = createPagination(
+                comparisonResults.exactMatches.length, 
+                currentPage.matches, 
+                pageSize, 
+                'matchesPagination', 
+                'matches'
+            );
+            
+            matchesContainer.innerHTML = tableHTML + paginationHTML;
         }
         
         function showFile1Only() {
@@ -1411,6 +1939,7 @@
             }
             
             const selectedCols = selectedColumnsByFile[0] || [];
+            const paginatedData = getPaginatedData(comparisonResults.file1Only, currentPage['file1-only'], pageSize);
             
             let tableHTML = `
                 <div style="overflow-x: auto;">
@@ -1426,7 +1955,7 @@
             
             tableHTML += `</tr></thead><tbody>`;
             
-            comparisonResults.file1Only.forEach(item => {
+            paginatedData.forEach(item => {
                 tableHTML += `
                     <tr class="only-in-file1">
                         <td>${item.row + 1}</td>
@@ -1440,7 +1969,16 @@
             });
             
             tableHTML += `</tbody></table></div>`;
-            file1OnlyContainer.innerHTML = tableHTML;
+            
+            const paginationHTML = createPagination(
+                comparisonResults.file1Only.length, 
+                currentPage['file1-only'], 
+                pageSize, 
+                'file1Pagination', 
+                'file1-only'
+            );
+            
+            file1OnlyContainer.innerHTML = tableHTML + paginationHTML;
         }
         
         function showFile2Only() {
@@ -1450,6 +1988,7 @@
             }
             
             const selectedCols = selectedColumnsByFile[1] || [];
+            const paginatedData = getPaginatedData(comparisonResults.file2Only, currentPage['file2-only'], pageSize);
             
             let tableHTML = `
                 <div style="overflow-x: auto;">
@@ -1465,7 +2004,7 @@
             
             tableHTML += `</tr></thead><tbody>`;
             
-            comparisonResults.file2Only.forEach(item => {
+            paginatedData.forEach(item => {
                 tableHTML += `
                     <tr class="only-in-file2">
                         <td>${item.row + 1}</td>
@@ -1479,7 +2018,16 @@
             });
             
             tableHTML += `</tbody></table></div>`;
-            file2OnlyContainer.innerHTML = tableHTML;
+            
+            const paginationHTML = createPagination(
+                comparisonResults.file2Only.length, 
+                currentPage['file2-only'], 
+                pageSize, 
+                'file2Pagination', 
+                'file2-only'
+            );
+            
+            file2OnlyContainer.innerHTML = tableHTML + paginationHTML;
         }
         
         function showExportButtons() {
