@@ -588,6 +588,20 @@
             margin: 10px 0;
             font-size: 0.9rem;
         }
+
+        .percentage-cell {
+            background-color: #e8f5e8;
+            font-weight: 600;
+        }
+
+        .order-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -607,6 +621,7 @@
                 <li><strong>Encontrar duplicatas</strong> em bases de dados diferentes</li>
                 <li><strong>Reconciliar planilhas</strong> com formatos diferentes</li>
                 <li><strong>Validar migração</strong> de dados entre sistemas</li>
+                <li><strong>Comparar porcentagens e valores numéricos</strong> com diferentes formatações</li>
             </ul>
         </div>
 
@@ -628,6 +643,9 @@
                 <p class="performance-warning">
                     ⚠️ <strong>Dica:</strong> Para arquivos grandes (+10MB), considere dividir em partes menores para melhor performance.
                 </p>
+                <p class="order-warning">
+                    🔄 <strong>Importante:</strong> A ordem dos arquivos não afeta mais os resultados. O sistema agora é independente da ordem.
+                </p>
             </div>
             
             <div class="file-list" id="fileList"></div>
@@ -648,6 +666,8 @@
                 <p><strong>Como funciona:</strong> Selecione as colunas que deseja comparar em cada arquivo. 
                 O sistema irá comparar os <strong>conjuntos de valores</strong> das colunas selecionadas entre todos os arquivos, 
                 independente da ordem das colunas.</p>
+                <p><strong>Suporte a porcentagens:</strong> O sistema reconhece automaticamente valores como "25%", "0.25" e "25" como equivalentes.</p>
+                <p><strong>Algoritmo melhorado:</strong> Agora os resultados são consistentes independentemente da ordem dos arquivos.</p>
             </div>
             
             <div class="config-section">
@@ -806,7 +826,7 @@
             handleFiles(e.dataTransfer.files);
         });
 
-        // FUNÇÃO DE SIMILARIDADE OTIMIZADA - Combina o melhor dos dois
+        // FUNÇÃO DE SIMILARIDADE OTIMIZADA - CORRIGIDA PARA PORCENTAGENS
         function calculateSimilarity(str1, str2) {
             // Converte para string e remove espaços
             const cleanStr1 = str1 !== null && str1 !== undefined ? str1.toString().trim() : '';
@@ -814,6 +834,20 @@
             
             // Se ambos estão vazios, considera 100% similar
             if (cleanStr1 === '' && cleanStr2 === '') return 1;
+            
+            // PRIMEIRO: Tenta detectar e converter porcentagens
+            const percentageValue1 = parsePercentage(cleanStr1);
+            const percentageValue2 = parsePercentage(cleanStr2);
+            
+            // Se ambos são porcentagens válidas, compara os valores decimais
+            if (percentageValue1 !== null && percentageValue2 !== null) {
+                const diff = Math.abs(percentageValue1 - percentageValue2);
+                // Para porcentagens, considera alta similaridade se a diferença for pequena
+                if (diff < 0.001) return 1; // 0.1% de diferença
+                if (diff < 0.01) return 0.95; // 1% de diferença
+                if (diff < 0.05) return 0.85; // 5% de diferença
+                return Math.max(0.1, 1 - (diff / Math.max(percentageValue1, percentageValue2)));
+            }
             
             // Remove zeros à esquerda (melhoria do segundo arquivo)
             const noLeadingZero1 = cleanStr1.replace(/^0+/, '');
@@ -837,6 +871,36 @@
             
             // Similaridade textual usando abordagem simplificada
             return calculateTextSimilarity(cleanStr1, cleanStr2);
+        }
+        
+        // NOVA FUNÇÃO: Converter porcentagens para valores decimais
+        function parsePercentage(str) {
+            if (!str) return null;
+            
+            const trimmed = str.toString().trim();
+            
+            // Detecta se é uma porcentagem (termina com %)
+            if (trimmed.endsWith('%')) {
+                const numberPart = trimmed.slice(0, -1).replace(',', '.');
+                const value = parseFloat(numberPart);
+                if (!isNaN(value)) {
+                    return value / 100; // Converte para decimal
+                }
+            }
+            
+            // Detecta se é um número decimal que representa porcentagem (entre 0 e 1)
+            const decimalValue = parseFloat(trimmed.replace(',', '.'));
+            if (!isNaN(decimalValue)) {
+                if (decimalValue >= 0 && decimalValue <= 1) {
+                    return decimalValue;
+                }
+                // Se é um número entre 0 e 100, pode ser uma porcentagem sem o símbolo
+                if (decimalValue >= 0 && decimalValue <= 100) {
+                    return decimalValue / 100;
+                }
+            }
+            
+            return null; // Não é uma porcentagem reconhecível
         }
         
         function calculateTextSimilarity(str1, str2) {
@@ -904,6 +968,7 @@
             return matrix[s2.length][s1.length];
         }
 
+        // FUNÇÃO DE SIMILARIDADE DE CONJUNTO MELHORADA - AGORA É COMUTATIVA
         function calculateSetSimilarity(values1, values2, isExactSearch) {
             if (values1.length === 0 && values2.length === 0) return 1;
             if (values1.length === 0 || values2.length === 0) return 0;
@@ -917,21 +982,21 @@
                 return union.size === 0 ? 1 : intersection.size / union.size;
             }
             
-            // Para busca por similaridade, usa algoritmo melhorado
+            // Para busca por similaridade, usa algoritmo COMUTATIVO melhorado
             let totalSimilarity = 0;
-            let matchesFound = 0;
-            const usedIndexes = new Set();
+            let totalPossible = 0;
+            const usedIndexes2 = new Set();
             
+            // Primeira passada: para cada valor em values1, encontra o melhor match em values2
             values1.forEach(val1 => {
                 let bestSimilarity = 0;
                 let bestIndex = -1;
                 
                 values2.forEach((val2, j) => {
-                    if (usedIndexes.has(j)) return;
+                    if (usedIndexes2.has(j)) return;
                     
                     const similarity = calculateSimilarity(val1, val2);
                     
-                    // Limiar mais baixo para matching individual (50%)
                     if (similarity > 0.5 && similarity > bestSimilarity) {
                         bestSimilarity = similarity;
                         bestIndex = j;
@@ -940,19 +1005,196 @@
                 
                 if (bestIndex !== -1) {
                     totalSimilarity += bestSimilarity;
-                    matchesFound++;
-                    usedIndexes.add(bestIndex);
+                    usedIndexes2.add(bestIndex);
+                }
+                totalPossible += 1;
+            });
+            
+            // Segunda passada: para valores restantes em values2 que não foram pareados
+            values2.forEach((val2, j) => {
+                if (!usedIndexes2.has(j)) {
+                    let bestSimilarity = 0;
+                    
+                    values1.forEach(val1 => {
+                        const similarity = calculateSimilarity(val1, val2);
+                        if (similarity > 0.5 && similarity > bestSimilarity) {
+                            bestSimilarity = similarity;
+                        }
+                    });
+                    
+                    if (bestSimilarity > 0) {
+                        totalSimilarity += bestSimilarity;
+                    }
+                    totalPossible += 1;
                 }
             });
             
-            // Se não encontrou matches, retorna 0
-            if (matchesFound === 0) return 0;
-            
-            // Calcula similaridade média ponderada
-            return totalSimilarity / Math.max(values1.length, values2.length);
+            return totalPossible > 0 ? totalSimilarity / totalPossible : 0;
         }
 
-        // FUNÇÕES DE PAGINAÇÃO (Melhoria do primeiro arquivo)
+        // FUNÇÃO DE COMPARAÇÃO PRINCIPAL CORRIGIDA - AGORA É INDEPENDENTE DA ORDEM
+        function compareCompleteRows(file1, file2, isExactSearch, threshold) {
+            const file1Rows = [];
+            const file2Rows = [];
+            
+            // Preparar linhas do arquivo 1 (incluindo valores vazios para consistência)
+            for (let row1 = 1; row1 < file1.data.length; row1++) {
+                if (!file1.data[row1]) continue;
+                
+                const rowValues = [];
+                const rowData = {};
+                
+                selectedColumnsByFile[0].forEach(column => {
+                    const colIndex = file1.headers.indexOf(column);
+                    if (colIndex !== -1 && file1.data[row1][colIndex] !== undefined) {
+                        const value = file1.data[row1][colIndex];
+                        // Inclui valores vazios também para manter consistência
+                        rowValues.push(value !== null && value !== undefined ? value.toString().trim() : '');
+                        rowData[column] = value;
+                    }
+                });
+                
+                file1Rows.push({
+                    rowIndex: row1,
+                    values: rowValues,
+                    rowData: rowData,
+                    fullRow: file1.data[row1]
+                });
+            }
+            
+            // Preparar linhas do arquivo 2 (incluindo valores vazios para consistência)
+            for (let row2 = 1; row2 < file2.data.length; row2++) {
+                if (!file2.data[row2]) continue;
+                
+                const rowValues = [];
+                const rowData = {};
+                
+                selectedColumnsByFile[1].forEach(column => {
+                    const colIndex = file2.headers.indexOf(column);
+                    if (colIndex !== -1 && file2.data[row2][colIndex] !== undefined) {
+                        const value = file2.data[row2][colIndex];
+                        // Inclui valores vazios também para manter consistência
+                        rowValues.push(value !== null && value !== undefined ? value.toString().trim() : '');
+                        rowData[column] = value;
+                    }
+                });
+                
+                file2Rows.push({
+                    rowIndex: row2,
+                    values: rowValues,
+                    rowData: rowData,
+                    fullRow: file2.data[row2]
+                });
+            }
+            
+            // ALGORITMO MELHORADO: Encontrar os melhores matches de forma bidirecional
+            const matchedFile1Rows = new Set();
+            const matchedFile2Rows = new Set();
+            
+            // Primeira passada: arquivo1 -> arquivo2
+            file1Rows.forEach((row1, row1Index) => {
+                let bestMatch = null;
+                let bestSimilarity = 0;
+                
+                file2Rows.forEach((row2, row2Index) => {
+                    if (matchedFile2Rows.has(row2Index)) return;
+                    
+                    const similarity = calculateSetSimilarity(row1.values, row2.values, isExactSearch);
+                    
+                    if (similarity >= threshold && similarity > bestSimilarity) {
+                        bestSimilarity = similarity;
+                        bestMatch = { 
+                            row2, 
+                            row2Index,
+                            similarity: similarity
+                        };
+                    }
+                });
+                
+                if (bestMatch && bestSimilarity >= threshold) {
+                    comparisonResults.exactMatches.push({
+                        file1: file1.name,
+                        row1: row1.rowIndex,
+                        file2: file2.name,
+                        row2: bestMatch.row2.rowIndex,
+                        similarity: Math.round(bestSimilarity * 100),
+                        row1Data: row1.rowData,
+                        row2Data: bestMatch.row2.rowData,
+                        fullRow1: row1.fullRow,
+                        fullRow2: bestMatch.row2.fullRow
+                    });
+                    
+                    matchedFile1Rows.add(row1Index);
+                    matchedFile2Rows.add(bestMatch.row2Index);
+                }
+            });
+            
+            // Segunda passada: arquivo2 -> arquivo1 (para capturar matches que podem ter sido perdidos)
+            file2Rows.forEach((row2, row2Index) => {
+                if (matchedFile2Rows.has(row2Index)) return;
+                
+                let bestMatch = null;
+                let bestSimilarity = 0;
+                
+                file1Rows.forEach((row1, row1Index) => {
+                    if (matchedFile1Rows.has(row1Index)) return;
+                    
+                    const similarity = calculateSetSimilarity(row2.values, row1.values, isExactSearch);
+                    
+                    if (similarity >= threshold && similarity > bestSimilarity) {
+                        bestSimilarity = similarity;
+                        bestMatch = { 
+                            row1, 
+                            row1Index,
+                            similarity: similarity
+                        };
+                    }
+                });
+                
+                if (bestMatch && bestSimilarity >= threshold) {
+                    comparisonResults.exactMatches.push({
+                        file1: file1.name,
+                        row1: bestMatch.row1.rowIndex,
+                        file2: file2.name,
+                        row2: row2.rowIndex,
+                        similarity: Math.round(bestSimilarity * 100),
+                        row1Data: bestMatch.row1.rowData,
+                        row2Data: row2.rowData,
+                        fullRow1: bestMatch.row1.fullRow,
+                        fullRow2: row2.fullRow
+                    });
+                    
+                    matchedFile1Rows.add(bestMatch.row1Index);
+                    matchedFile2Rows.add(row2Index);
+                }
+            });
+            
+            // Linhas apenas no arquivo 1
+            file1Rows.forEach((row1, row1Index) => {
+                if (!matchedFile1Rows.has(row1Index)) {
+                    comparisonResults.file1Only.push({
+                        file: file1.name,
+                        row: row1.rowIndex,
+                        rowData: row1.rowData,
+                        fullRow: row1.fullRow
+                    });
+                }
+            });
+            
+            // Linhas apenas no arquivo 2
+            file2Rows.forEach((row2, row2Index) => {
+                if (!matchedFile2Rows.has(row2Index)) {
+                    comparisonResults.file2Only.push({
+                        file: file2.name,
+                        row: row2.rowIndex,
+                        rowData: row2.rowData,
+                        fullRow: row2.fullRow
+                    });
+                }
+            });
+        }
+
+        // FUNÇÕES DE PAGINAÇÃO
         function getPaginatedData(data, page, pageSize) {
             const start = (page - 1) * pageSize;
             const end = start + pageSize;
@@ -1115,14 +1357,35 @@
         }
         
         function clearFiles() {
+            // Limpeza completa de todas as variáveis de estado
             uploadedFiles = [];
+            fileData = [];
+            selectedColumnsByFile = {};
+            comparisonResults = {};
+            currentPage = {
+                matches: 1,
+                'file1-only': 1,
+                'file2-only': 1
+            };
+            
+            // Limpeza da interface
             fileList.innerHTML = '';
+            fileTabs.innerHTML = '';
+            previewContainers.innerHTML = '';
+            columnTabs.innerHTML = '';
+            columnContainers.innerHTML = '';
+            
+            // Esconder elementos
             clearFilesBtn.style.display = 'none';
             configCard.style.display = 'none';
             filePreview.style.display = 'none';
             resultsSection.style.display = 'none';
-            selectedColumnsByFile = {};
             errorMessage.style.display = 'none';
+            
+            // Reset do file input
+            fileInput.value = '';
+            
+            console.log('Estado completamente limpo'); // Para debug
         }
         
         function formatFileSize(bytes) {
@@ -1140,16 +1403,19 @@
         function processFilesForColumns() {
             if (uploadedFiles.length === 0) return;
             
+            // RESET COMPLETO ao processar novos arquivos
             fileData = [];
-            let processedCount = 0;
+            selectedColumnsByFile = {};
             
+            // Limpar interfaces
             fileTabs.innerHTML = '';
             previewContainers.innerHTML = '';
-            filePreview.style.display = 'block';
-            
             columnTabs.innerHTML = '';
             columnContainers.innerHTML = '';
-            selectedColumnsByFile = {};
+            
+            filePreview.style.display = 'block';
+            
+            let processedCount = 0;
             
             uploadedFiles.forEach((file, index) => {
                 const reader = new FileReader();
@@ -1161,6 +1427,12 @@
                         const firstSheetName = workbook.SheetNames[0];
                         const worksheet = workbook.Sheets[firstSheetName];
                         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        console.log(`Arquivo processado: ${file.name}`, {
+                            linhas: jsonData.length,
+                            colunas: jsonData[0] ? jsonData[0].length : 0,
+                            headers: jsonData[0] || []
+                        });
                         
                         const fileInfo = {
                             name: file.name,
@@ -1175,12 +1447,13 @@
                         processedCount++;
                         
                         if (processedCount === uploadedFiles.length) {
+                            console.log('Todos os arquivos processados:', fileData);
                             activateTab(0);
                             activateColumnTab(0);
                         }
                     } catch (error) {
-                        console.error('Erro ao processar arquivo:', error);
-                        showError(`Erro ao processar o arquivo "${file.name}". Verifique se é um arquivo Excel válido.`);
+                        console.error('Erro detalhado ao processar arquivo:', error);
+                        showError(`Erro ao processar o arquivo "${file.name}": ${error.message}`);
                     }
                 };
                 
@@ -1217,7 +1490,13 @@
                     if (data[i]) {
                         tableHTML += `<tr>`;
                         data[i].forEach(cell => {
-                            tableHTML += `<td>${cell || ''}</td>`;
+                            // Destaca células que podem conter porcentagens
+                            const cellValue = cell || '';
+                            const isPercentage = typeof cellValue === 'string' && 
+                                (cellValue.includes('%') || 
+                                 (parsePercentage(cellValue) !== null && parsePercentage(cellValue) <= 1));
+                            const cellClass = isPercentage ? 'percentage-cell' : '';
+                            tableHTML += `<td class="${cellClass}">${cellValue}</td>`;
                         });
                         tableHTML += `</tr>`;
                     }
@@ -1368,18 +1647,46 @@
         }
         
         function startComparison() {
+            // VALIDAÇÃO EXPANDIDA
             if (uploadedFiles.length < 2) {
                 showError('Por favor, faça upload de pelo menos 2 arquivos para comparar.');
                 return;
             }
             
+            // Verificar se os arquivos foram processados corretamente
+            if (fileData.length !== uploadedFiles.length) {
+                showError('Erro: Arquivos não foram processados completamente. Tente fazer upload novamente.');
+                return;
+            }
+            
+            // Verificar se há dados nos arquivos
             for (let i = 0; i < fileData.length; i++) {
+                if (!fileData[i] || !fileData[i].data || fileData[i].data.length === 0) {
+                    showError(`O arquivo "${uploadedFiles[i].name}" está vazio ou não pôde ser processado.`);
+                    return;
+                }
+                
                 if (!selectedColumnsByFile[i] || selectedColumnsByFile[i].length === 0) {
                     showError(`Por favor, selecione pelo menos uma coluna no arquivo "${fileData[i].name}".`);
                     activateColumnTab(i);
                     return;
                 }
+                
+                // Verificar se as colunas selecionadas existem nos dados
+                const missingColumns = selectedColumnsByFile[i].filter(col => 
+                    !fileData[i].headers.includes(col)
+                );
+                
+                if (missingColumns.length > 0) {
+                    showError(`Colunas selecionadas não encontradas no arquivo "${fileData[i].name}": ${missingColumns.join(', ')}`);
+                    activateColumnTab(i);
+                    return;
+                }
             }
+            
+            // Debug: log dos dados que serão comparados
+            console.log('Arquivos para comparação:', fileData.map(f => f.name));
+            console.log('Colunas selecionadas:', selectedColumnsByFile);
             
             loadingSection.style.display = 'block';
             resultsSection.style.display = 'none';
@@ -1391,11 +1698,26 @@
         }
         
         function performComparison() {
+            // RESET COMPLETO dos resultados anteriores
             comparisonResults = {
                 exactMatches: [],
                 file1Only: [],
                 file2Only: []
             };
+            
+            // Reset das páginas
+            currentPage = {
+                matches: 1,
+                'file1-only': 1,
+                'file2-only': 1
+            };
+            
+            console.log('Iniciando nova comparação com:', {
+                arquivo1: fileData[0]?.name,
+                arquivo2: fileData[1]?.name,
+                colunasArq1: selectedColumnsByFile[0],
+                colunasArq2: selectedColumnsByFile[1]
+            });
             
             const isExactSearch = searchType.value === 'exact';
             const threshold = parseInt(similarityThreshold.value) / 100;
@@ -1406,118 +1728,8 @@
                 compareCompleteRows(file1, file2, isExactSearch, threshold);
             }
             
+            console.log('Resultados da comparação:', comparisonResults);
             showResults();
-        }
-        
-        function compareCompleteRows(file1, file2, isExactSearch, threshold) {
-            const file1Rows = [];
-            const file2Rows = [];
-            
-            // Preparar linhas do arquivo 1 (incluindo valores vazios para consistência)
-            for (let row1 = 1; row1 < file1.data.length; row1++) {
-                if (!file1.data[row1]) continue;
-                
-                const rowValues = [];
-                const rowData = {};
-                
-                selectedColumnsByFile[0].forEach(column => {
-                    const colIndex = file1.headers.indexOf(column);
-                    if (colIndex !== -1 && file1.data[row1][colIndex] !== undefined) {
-                        const value = file1.data[row1][colIndex];
-                        // Inclui valores vazios também para manter consistência
-                        rowValues.push(value !== null && value !== undefined ? value.toString().trim() : '');
-                        rowData[column] = value;
-                    }
-                });
-                
-                file1Rows.push({
-                    rowIndex: row1,
-                    values: rowValues,
-                    rowData: rowData,
-                    fullRow: file1.data[row1]
-                });
-            }
-            
-            // Preparar linhas do arquivo 2 (incluindo valores vazios para consistência)
-            for (let row2 = 1; row2 < file2.data.length; row2++) {
-                if (!file2.data[row2]) continue;
-                
-                const rowValues = [];
-                const rowData = {};
-                
-                selectedColumnsByFile[1].forEach(column => {
-                    const colIndex = file2.headers.indexOf(column);
-                    if (colIndex !== -1 && file2.data[row2][colIndex] !== undefined) {
-                        const value = file2.data[row2][colIndex];
-                        // Inclui valores vazios também para manter consistência
-                        rowValues.push(value !== null && value !== undefined ? value.toString().trim() : '');
-                        rowData[column] = value;
-                    }
-                });
-                
-                file2Rows.push({
-                    rowIndex: row2,
-                    values: rowValues,
-                    rowData: rowData,
-                    fullRow: file2.data[row2]
-                });
-            }
-            
-            const matchedFile2Rows = new Set();
-            
-            file1Rows.forEach((row1, row1Index) => {
-                let bestMatch = null;
-                let bestSimilarity = 0;
-                
-                file2Rows.forEach((row2, row2Index) => {
-                    if (matchedFile2Rows.has(row2Index)) return;
-                    
-                    const similarity = calculateSetSimilarity(row1.values, row2.values, isExactSearch);
-                    
-                    if (similarity >= threshold && similarity > bestSimilarity) {
-                        bestSimilarity = similarity;
-                        bestMatch = { 
-                            row2, 
-                            row2Index,
-                            similarity: similarity
-                        };
-                    }
-                });
-                
-                if (bestMatch && bestSimilarity >= threshold) {
-                    comparisonResults.exactMatches.push({
-                        file1: file1.name,
-                        row1: row1.rowIndex,
-                        file2: file2.name,
-                        row2: bestMatch.row2.rowIndex,
-                        similarity: Math.round(bestSimilarity * 100),
-                        row1Data: row1.rowData,
-                        row2Data: bestMatch.row2.rowData,
-                        fullRow1: row1.fullRow,
-                        fullRow2: bestMatch.row2.fullRow
-                    });
-                    
-                    matchedFile2Rows.add(bestMatch.row2Index);
-                } else {
-                    comparisonResults.file1Only.push({
-                        file: file1.name,
-                        row: row1.rowIndex,
-                        rowData: row1.rowData,
-                        fullRow: row1.fullRow
-                    });
-                }
-            });
-            
-            file2Rows.forEach((row2, row2Index) => {
-                if (!matchedFile2Rows.has(row2Index)) {
-                    comparisonResults.file2Only.push({
-                        file: file2.name,
-                        row: row2.rowIndex,
-                        rowData: row2.rowData,
-                        fullRow: row2.fullRow
-                    });
-                }
-            });
         }
         
         function showResults() {
@@ -1610,9 +1822,15 @@
                     const value1 = match.row1Data[col] || '';
                     const value2 = match.row2Data[col2] || '';
                     
+                    // Destaca células com porcentagens
+                    const isPercentage1 = typeof value1 === 'string' && value1.includes('%');
+                    const isPercentage2 = typeof value2 === 'string' && value2.includes('%');
+                    const cellClass1 = isPercentage1 ? 'percentage-cell' : '';
+                    const cellClass2 = isPercentage2 ? 'percentage-cell' : '';
+                    
                     tableHTML += `<td>
-                        <strong>Arq1:</strong> ${value1}<br>
-                        <strong>Arq2:</strong> ${value2}
+                        <strong>Arq1:</strong> <span class="${cellClass1}">${value1}</span><br>
+                        <strong>Arq2:</strong> <span class="${cellClass2}">${value2}</span>
                     </td>`;
                 });
                 
@@ -1662,7 +1880,10 @@
                 `;
                 
                 selectedCols.forEach(col => {
-                    tableHTML += `<td>${item.rowData[col] || ''}</td>`;
+                    const value = item.rowData[col] || '';
+                    const isPercentage = typeof value === 'string' && value.includes('%');
+                    const cellClass = isPercentage ? 'percentage-cell' : '';
+                    tableHTML += `<td class="${cellClass}">${value}</td>`;
                 });
                 
                 tableHTML += `</tr>`;
@@ -1711,7 +1932,10 @@
                 `;
                 
                 selectedCols.forEach(col => {
-                    tableHTML += `<td>${item.rowData[col] || ''}</td>`;
+                    const value = item.rowData[col] || '';
+                    const isPercentage = typeof value === 'string' && value.includes('%');
+                    const cellClass = isPercentage ? 'percentage-cell' : '';
+                    tableHTML += `<td class="${cellClass}">${value}</td>`;
                 });
                 
                 tableHTML += `</tr>`;
